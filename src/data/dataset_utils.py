@@ -20,7 +20,7 @@ class RegressionDataset(Dataset):
         return self.x_data[index], self.y_data[index]
 
     def __len__(self):
-        return len(self.x_data)
+        return len(self.y_data)
 
 
 def basic_random_split(
@@ -241,13 +241,13 @@ def apply_preprocessing(data, type_):
     data["rm"]["x_test"] = scaler.transform(data["rm"]["x_test"])
 
     # re02
-    data["rm"]["x_train"] = scaler.fit_transform(data["re02"]["x_train"])
-    data["rm"]["x_valid"] = scaler.transform(data["re02"]["x_valid"])
-    data["rm"]["x_test"] = scaler.transform(data["re02"]["x_test"])
+    data["re02"]["x_train"] = scaler.fit_transform(data["re02"]["x_train"])
+    data["re02"]["x_valid"] = scaler.transform(data["re02"]["x_valid"])
+    data["re02"]["x_test"] = scaler.transform(data["re02"]["x_test"])
 
     # A80
-    data["rm"]["x_train"] = scaler.fit_transform(data["A80"]["x_train"])
-    data["rm"]["x_valid"] = scaler.transform(data["A80"]["x_valid"])
-    data["rm"]["x_test"] = scaler.transform(data["A80"]["x_test"])
+    data["A80"]["x_train"] = scaler.fit_transform(data["A80"]["x_train"])
+    data["A80"]["x_valid"] = scaler.transform(data["A80"]["x_valid"])
+    data["A80"]["x_test"] = scaler.transform(data["A80"]["x_test"])
 
     return data

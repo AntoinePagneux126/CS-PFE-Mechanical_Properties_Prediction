@@ -4,8 +4,8 @@ import argparse
 import torch
 import yaml
 
-from dataset_utils import basic_random_split, RegressionDataset
 from torch.utils.data import DataLoader
+from data.dataset_utils import basic_random_split, RegressionDataset
 
 
 def main(cfg):  # pylint: disable=too-many-locals
