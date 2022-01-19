@@ -1,9 +1,11 @@
 """This module aims to load and process the data."""
 # pylint: disable=import-error, no-name-in-module
 import argparse
+import torch
 import yaml
 
-from dataset_utils import basic_random_split
+from dataset_utils import basic_random_split, RegressionDataset
+from torch.utils.data import DataLoader
 
 
 def main(cfg):  # pylint: disable=too-many-locals
@@ -21,9 +23,81 @@ def main(cfg):  # pylint: disable=too-many-locals
     path_to_data = cfg["DATA_DIR"]
 
     # Load the dataset for the training/validation/test sets
-    data = basic_random_split(path_to_data=path_to_data)
+    data = basic_random_split(
+        path_to_data=path_to_data,
+        test_valid_ratio=cfg["DATASET"]["TEST_VALID_RATIO"],
+        preprocessing=cfg["DATASET"]["PREPROCESSING"]["NORMALIZE"]["TYPE"],
+    )
 
-    return data
+    target_to_predict = cfg["DATASET"]["PREPROCESSING"]["TARGET"]
+
+    if cfg["DATASET"]["PREPROCESSING"]["MERGE_FILES"]["ACTIVE"]:
+        pass
+    else:
+        dataset = data[cfg["DATASET"]["PREPROCESSING"]["MERGE_FILES"]["WHICH"]]
+        # Create train, valid and test dataset
+        train_dataset = RegressionDataset(
+            x_data=torch.from_numpy(
+                dataset["dataset"][target_to_predict]["x_train"]
+            ).float(),
+            y_data=torch.from_numpy(
+                dataset["dataset"][target_to_predict]["y_train"]
+            ).float(),
+        )
+        valid_dataset = RegressionDataset(
+            x_data=torch.from_numpy(
+                dataset["dataset"][target_to_predict]["x_valid"]
+            ).float(),
+            y_data=torch.from_numpy(
+                dataset["dataset"][target_to_predict]["y_valid"]
+            ).float(),
+        )
+        test_dataset = RegressionDataset(
+            x_data=torch.from_numpy(
+                dataset["dataset"][target_to_predict]["x_test"]
+            ).float(),
+            y_data=torch.from_numpy(
+                dataset["dataset"][target_to_predict]["y_test"]
+            ).float(),
+        )
+
+    # DataLoader
+
+    train_loader = DataLoader(
+        dataset=train_dataset,
+        batch_size=cfg["DATASET"]["BATCH_SIZE"],
+        num_workers=cfg["DATASET"]["NUM_THREADS"],
+        shuffle=True,
+    )
+
+    valid_loader = DataLoader(
+        dataset=valid_dataset,
+        batch_size=cfg["DATASET"]["BATCH_SIZE"],
+        shuffle=False,
+        num_workers=cfg["DATASET"]["NUM_THREADS"],
+    )
+    test_loader = DataLoader(
+        dataset=test_dataset,
+        batch_size=cfg["TEST"]["BATCH_SIZE"],
+        shuffle=False,
+        num_workers=cfg["DATASET"]["NUM_THREADS"],
+    )
+
+    if cfg["DATASET"]["VERBOSITY"]:
+        print(
+            f"The train set contains {len(train_loader.dataset)} samples,"
+            f" in {len(train_loader)} batches"
+        )
+        print(
+            f"The validation set contains {len(valid_loader.dataset)} samples,"
+            f" in {len(valid_loader)} batches"
+        )
+        print(
+            f"The test set contains {len(test_loader.dataset)} samples,"
+            f" in {len(test_loader)} batches"
+        )
+
+    return train_loader, valid_loader, test_loader
 
 
 if __name__ == "__main__":

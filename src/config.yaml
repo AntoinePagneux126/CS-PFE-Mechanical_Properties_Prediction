@@ -1,2 +1,17 @@
 DATA_DIR: '../data'
 OUTPUT_DIR: '../models'
+DATASET:
+  DATA_FORMAT: csv
+  PREPROCESSING:
+    MERGE_FILES:
+      ACTIVE: False
+      WHICH: 0
+    NORMALIZE:
+      TYPE: "MinMaxScaler"  # ["MinMaxScalar", "StandardScaler"]
+    TARGET: "rm"  # ["rm", "re02", "A80"]
+  BATCH_SIZE: 32
+  TEST_VALID_RATIO: [0.1, 0.2]
+  VERBOSITY: True
+  NUM_THREADS: 4
+TEST:
+  BATCH_SIZE: 16

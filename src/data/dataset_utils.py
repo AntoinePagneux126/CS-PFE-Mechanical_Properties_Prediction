@@ -5,9 +5,27 @@ import tqdm
 import pandas as pd
 
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from torch.utils.data import Dataset
 
 
-def basic_random_split(path_to_data, test_valid_ratio=(0.1, 0.2)):
+class RegressionDataset(Dataset):
+    """Create a Torch Dataset for our regression problem."""
+
+    def __init__(self, x_data, y_data):
+        self.x_data = x_data
+        self.y_data = y_data
+
+    def __getitem__(self, index):
+        return self.x_data[index], self.y_data[index]
+
+    def __len__(self):
+        return len(self.x_data)
+
+
+def basic_random_split(
+    path_to_data, test_valid_ratio=(0.1, 0.2), preprocessing="MinMaxScalar"
+):
     """This function split file according to a ratio to create
     training, validation and test dataset.
 
@@ -32,7 +50,11 @@ def basic_random_split(path_to_data, test_valid_ratio=(0.1, 0.2)):
             input_data=features_and_targets[key], test_valid_ratio=test_valid_ratio
         )
 
-    print(features_and_targets[0].keys())
+    for key in features_and_targets:
+        features_and_targets[key]["dataset"] = apply_preprocessing(
+            data=features_and_targets[key]["dataset"], type_=preprocessing
+        )
+
     return features_and_targets
 
 
@@ -46,7 +68,7 @@ def load_files(path_to_data):
         list(pandas.core.frame.DataFrame): List of Dataframe containing data from each file.
     """
     data = []
-    data_files = os.listdir(path_to_data)
+    data_files = sorted(os.listdir(path_to_data))
     if len(data_files) != 0:
         print("\n#################")
         print("# Loading files #")
@@ -130,7 +152,7 @@ def create_x_and_y(input_data, test_valid_ratio):  # pylint: disable=too-many-lo
     x_train_rm, x_valid_rm, y_train_rm, y_valid_rm = train_test_split(
         x_train_valid_rm,
         y_train_valid_rm,
-        test_size=test_valid_ratio[0],
+        test_size=test_valid_ratio[1],
         random_state=0,
     )
     y_train_rm = y_train_rm.values.ravel()
@@ -138,11 +160,11 @@ def create_x_and_y(input_data, test_valid_ratio):  # pylint: disable=too-many-lo
     y_test_rm = y_test_rm.values.ravel()
 
     feature_and_target["rm"] = {
-        "x_train": x_train_rm,
+        "x_train": x_train_rm.to_numpy(),
         "y_train": y_train_rm,
-        "x_valid": x_valid_rm,
+        "x_valid": x_valid_rm.to_numpy(),
         "y_valid": y_valid_rm,
-        "x_test": x_test_rm,
+        "x_test": x_test_rm.to_numpy(),
         "y_test": y_test_rm,
     }
 
@@ -164,11 +186,11 @@ def create_x_and_y(input_data, test_valid_ratio):  # pylint: disable=too-many-lo
     y_test_re02 = y_test_re02.values.ravel()
 
     feature_and_target["re02"] = {
-        "x_train": x_train_re02,
+        "x_train": x_train_re02.to_numpy(),
         "y_train": y_train_re02,
-        "x_valid": x_valid_re02,
+        "x_valid": x_valid_re02.to_numpy(),
         "y_valid": y_valid_re02,
-        "x_test": x_test_re02,
+        "x_test": x_test_re02.to_numpy(),
         "y_test": y_test_re02,
     }
 
@@ -190,12 +212,42 @@ def create_x_and_y(input_data, test_valid_ratio):  # pylint: disable=too-many-lo
     y_test_a80 = y_test_a80.values.ravel()
 
     feature_and_target["A80"] = {
-        "x_train": x_train_a80,
+        "x_train": x_train_a80.to_numpy(),
         "y_train": y_train_a80,
-        "x_valid": x_valid_a80,
+        "x_valid": x_valid_a80.to_numpy(),
         "y_valid": y_valid_a80,
-        "x_test": x_test_a80,
+        "x_test": x_test_a80.to_numpy(),
         "y_test": y_test_a80,
     }
 
     return feature_and_target
+
+
+def apply_preprocessing(data, type_):
+    """Normalize the data
+
+    Args:
+        data (dict:) train, valid and test inputs and targets.
+        type_ (str): Type of normalization to apply
+
+    Returns:
+        dict: Normalized data
+    """
+    scaler = MinMaxScaler() if type_ == "MinMaxScalar" else StandardScaler()
+
+    # rm
+    data["rm"]["x_train"] = scaler.fit_transform(data["rm"]["x_train"])
+    data["rm"]["x_valid"] = scaler.transform(data["rm"]["x_valid"])
+    data["rm"]["x_test"] = scaler.transform(data["rm"]["x_test"])
+
+    # re02
+    data["rm"]["x_train"] = scaler.fit_transform(data["re02"]["x_train"])
+    data["rm"]["x_valid"] = scaler.transform(data["re02"]["x_valid"])
+    data["rm"]["x_test"] = scaler.transform(data["re02"]["x_test"])
+
+    # A80
+    data["rm"]["x_train"] = scaler.fit_transform(data["A80"]["x_train"])
+    data["rm"]["x_valid"] = scaler.transform(data["A80"]["x_valid"])
+    data["rm"]["x_test"] = scaler.transform(data["A80"]["x_test"])
+
+    return data
