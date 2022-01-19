@@ -1,1 +1,1 @@
-"""Kaggle Challenge module"""
+"""PFE ArcelorMittal module"""
