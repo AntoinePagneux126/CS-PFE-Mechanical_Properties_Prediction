@@ -14,6 +14,7 @@ from tools.trainer import train_one_epoch
 from tools.utils import load_model
 from tools.valid import test_one_epoch, ModelCheckpoint
 import data.loader as loader
+import visualization.vis as vis
 
 
 def generate_unique_logpath(logdir, raw_run_name):
@@ -44,7 +45,7 @@ def main(cfg, path_to_config):  # pylint: disable=too-many-locals
     """
 
     # Load data
-    train_loader, valid_loader, _ = loader.main(cfg=cfg)
+    train_loader, valid_loader, test_loader = loader.main(cfg=cfg)
 
     # Define device
     if torch.cuda.is_available():
@@ -125,6 +126,30 @@ def main(cfg, path_to_config):  # pylint: disable=too-many-locals
         tensorboard_writer.add_scalar(
             os.path.join(cfg["TRAIN"]["LOG_DIR"], "lr"), learning_rate, epoch
         )
+
+    # Compute Metrics
+    train_loss, train_r2, y_train_true, y_train_pred = test_one_epoch(
+        model, train_loader, f_loss, device, return_predictions=True
+    )
+    val_loss, val_r2, y_valid_true, y_valid_pred = test_one_epoch(
+        model, valid_loader, f_loss, device, return_predictions=True
+    )
+    test_loss, test_r2, y_test_true, y_test_pred = test_one_epoch(
+        model, test_loader, f_loss, device, return_predictions=True
+    )
+
+    print("\n###########")
+    print("# Results #")
+    print("###########\n")
+
+    print(f"Train MSE: {train_loss} | Train r2: {train_r2}")
+    print(f"Valid MSE: {val_loss} | Valid r2: {val_r2}")
+    print(f"Test MSE: {test_loss} | Test r2: {test_r2}")
+
+    y_true = {"train": y_train_true, "valid": y_valid_true, "test": y_test_true}
+    y_pred = {"train": y_train_pred, "valid": y_valid_pred, "test": y_test_pred}
+
+    vis.plot_all_y_pred_y_true(y_true=y_true, y_pred=y_pred)
 
 
 if __name__ == "__main__":

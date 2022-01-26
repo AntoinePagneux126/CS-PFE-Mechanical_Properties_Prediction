@@ -47,7 +47,7 @@ class ModelCheckpoint:  # pylint: disable=too-few-public-methods
             torch.save(self.model.state_dict(), filepath)
 
 
-def test_one_epoch(model, loader, f_loss, device):
+def test_one_epoch(model, loader, f_loss, device, return_predictions=False):
     """Test the model for one epoch
 
     Args:
@@ -55,6 +55,7 @@ def test_one_epoch(model, loader, f_loss, device):
         loader (torch.utils.data.DataLoader): pytorch loader containing the data
         f_loss (torch.nn.module): Cross_entropy loss for classification
         device (torch.device): cuda
+        return_predictions (bool): Should you return predicted val and target
 
     Returns:
         tot_loss/N (float) : accumulated loss over one epoch
@@ -110,4 +111,12 @@ def test_one_epoch(model, loader, f_loss, device):
             y_pred=predicted_targets_all.cpu().int().numpy(),
         )
 
-        return tot_loss / n_samples, r2_score_
+        if not return_predictions:
+            return tot_loss / n_samples, r2_score_
+
+        return (
+            tot_loss / n_samples,
+            r2_score_,
+            targets_all.cpu().int().numpy(),
+            predicted_targets_all.cpu().int().numpy(),
+        )
