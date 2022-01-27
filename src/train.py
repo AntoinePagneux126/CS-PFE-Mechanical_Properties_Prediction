@@ -149,7 +149,7 @@ def main(cfg, path_to_config):  # pylint: disable=too-many-locals
     y_true = {"train": y_train_true, "valid": y_valid_true, "test": y_test_true}
     y_pred = {"train": y_train_pred, "valid": y_valid_pred, "test": y_test_pred}
 
-    vis.plot_all_y_pred_y_true(y_true=y_true, y_pred=y_pred)
+    vis.plot_all_y_pred_y_true(y_true=y_true, y_pred=y_pred, path_to_save=save_dir)
 
 
 if __name__ == "__main__":

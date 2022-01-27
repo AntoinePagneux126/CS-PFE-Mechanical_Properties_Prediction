@@ -1,14 +1,16 @@
 """This module define functions to visualize different results."""
 # pylint: disable=invalid-name
+import os
 import matplotlib.pyplot as plt
 
 
-def plot_y_pred_y_true(y_true, y_pred):
+def plot_y_pred_y_true(y_true, y_pred, path_to_save):
     """Plot y_pred with respect to y_true
 
     Args:
         y_true (array): Ground truth target values
         y_pred (array): Estimated target values
+        path_to_save (str): Path to file
     """
     fig = plt.figure(figsize=(8, 15))
     ax = fig.add_subplot(1, 1, 1)
@@ -23,15 +25,17 @@ def plot_y_pred_y_true(y_true, y_pred):
     ax.set_ylabel("Estimated target values")
     ax.legend(loc="best")
 
+    plt.savefig(os.path.join(path_to_save, "y_pred_y_true.png"))
     plt.show()
 
 
-def plot_all_y_pred_y_true(y_true, y_pred):
+def plot_all_y_pred_y_true(y_true, y_pred, path_to_save):
     """Plot all y_preds with respect to y_trues
 
     Args:
         y_true (dict): Ground truth target values
         y_pred (dict): Estimated target values
+        path_to_save (str): Path to file
     """
     fig, ax = plt.subplots(2, 2, figsize=(10, 5))
     fig.tight_layout(pad=3)
@@ -94,4 +98,5 @@ def plot_all_y_pred_y_true(y_true, y_pred):
     ax[1, 1].set_ylabel("Estimated target values")
     ax[1, 1].legend()
 
+    plt.savefig(os.path.join(path_to_save, "y_pred_y_true.png"))
     plt.show()
