@@ -16,7 +16,7 @@ DATASET:
 TRAIN:
   EPOCH: 1000
   CHECKPOINT_STEP: 500
-  MODEL: LinearNet_1
+  MODEL: LinearNet_2
   NUM_HIDDEN_NEURON: 50
   LOG_DIR: 'tensorboard/metrics'
   SAVE_DIR: '../models'
