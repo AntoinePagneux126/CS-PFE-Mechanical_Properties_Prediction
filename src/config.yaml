@@ -1,0 +1,35 @@
+DATA_DIR: '../data'
+OUTPUT_DIR: '../models'
+DATASET:
+  DATA_FORMAT: csv
+  PREPROCESSING:
+    MERGE_FILES:
+      ACTIVE: True
+      WHICH: 0
+    NORMALIZE:
+      TYPE: "StandardScaler"  # ["MinMaxScalar", "StandardScaler"]
+    TARGET: "rm"  # ["rm", "re02", "A80"]
+  BATCH_SIZE: 32
+  TEST_VALID_RATIO: [0.1, 0.2]
+  VERBOSITY: True
+  NUM_THREADS: 4
+TRAIN:
+  EPOCH: 3000
+  CHECKPOINT_STEP: 500
+  MODEL: LinearNet_2
+  NUM_HIDDEN_NEURON: 50
+  LOG_DIR: 'tensorboard/metrics'
+  SAVE_DIR: '../models'
+  LR:
+    LR_INITIAL : 0.001
+    TYPE: "CyclicLR"  # [ReduceLROnPlateau, CyclicLR]
+    ReduceLROnPlateau:
+      LR_DECAY: 0.01
+      LR_PATIENCE : 3
+      LR_THRESHOLD : 0.02
+    CyclicLR:
+      BASE_LR: 0.00001
+      MAX_LR: 0.001
+      STEP_SIZE: 500
+TEST:
+  BATCH_SIZE: 16

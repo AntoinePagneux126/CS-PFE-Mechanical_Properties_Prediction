@@ -149,3 +149,12 @@ vscode/
 
 # Local History for Visual Studio Code
 .history/
+
+# Tensorboard tracking
+src/tensorboard/
+
+# Models
+models/*
+
+# Local config file
+src/config_local.yaml
