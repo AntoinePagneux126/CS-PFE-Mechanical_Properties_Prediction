@@ -1,5 +1,5 @@
 """This module aims to launch a training procedure."""
-# pylint: disable=import-error, no-name-in-module
+# pylint: disable=import-error, no-name-in-module, expression-not-assigned
 import os
 import argparse
 from shutil import copyfile
@@ -8,10 +8,9 @@ import yaml
 import torch
 import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
-from torch.optim import lr_scheduler
 
 from tools.trainer import train_one_epoch
-from tools.utils import load_model
+from tools.utils import load_model, choose_scheduler
 from tools.valid import test_one_epoch, ModelCheckpoint
 import data.loader as loader
 import visualization.vis as vis
@@ -67,7 +66,9 @@ def main(cfg, path_to_config):  # pylint: disable=too-many-locals
     f_loss = nn.MSELoss()
 
     # Define the optimizer
-    optimizer = torch.optim.Adam(model.parameters(), lr=cfg["TRAIN"]["LR_INITIAL"])
+    optimizer = torch.optim.Adam(
+        model.parameters(), lr=cfg["TRAIN"]["LR"]["LR_INITIAL"]
+    )
 
     # Tracking with tensorboard
     tensorboard_writer = SummaryWriter(log_dir=cfg["TRAIN"]["LOG_DIR"])
@@ -86,13 +87,7 @@ def main(cfg, path_to_config):  # pylint: disable=too-many-locals
     )
 
     # Lr scheduler
-    scheduler = lr_scheduler.ReduceLROnPlateau(
-        optimizer,
-        mode="max",
-        factor=cfg["TRAIN"]["LR_DECAY"],
-        patience=cfg["TRAIN"]["LR_PATIENCE"],
-        threshold=cfg["TRAIN"]["LR_THRESHOLD"],
-    )
+    scheduler = choose_scheduler(cfg=cfg["TRAIN"]["LR"], optimizer=optimizer)
 
     # Launch training loop
     for epoch in range(cfg["TRAIN"]["EPOCH"]):
@@ -104,7 +99,9 @@ def main(cfg, path_to_config):  # pylint: disable=too-many-locals
         val_loss, val_r2 = test_one_epoch(model, valid_loader, f_loss, device)
 
         # Update learning rate
-        scheduler.step(val_r2)
+        scheduler.step() if cfg["TRAIN"]["LR"][
+            "TYPE"
+        ] == "CyclicLR" else scheduler.step(val_r2)
         learning_rate = scheduler.optimizer.param_groups[0]["lr"]
 
         # Save best checkpoint
