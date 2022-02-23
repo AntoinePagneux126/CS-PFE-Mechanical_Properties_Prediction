@@ -100,6 +100,17 @@ def main(cfg):  # pylint: disable=too-many-locals
         x_test = dataset["dataset"][target_to_predict]["x_test"]
         y_test = dataset["dataset"][target_to_predict]["y_test"]
 
+    if not cfg["MODELS"]["NN"]:
+        return (
+            {
+                "x_train": x_train,
+                "y_train": y_train,
+                "x_valid": x_valid,
+                "y_valid": y_valid,
+            },
+            {"x_test": x_test, "y_test": y_test},
+        )
+
     # Create train, valid and test dataset
     train_dataset = RegressionDataset(
         x_data=torch.from_numpy(x_train).float(),
