@@ -3,6 +3,7 @@ from torch.optim import lr_scheduler
 
 from models.LinearNet_1 import LinearNet_1
 from models.LinearNet_2 import LinearNet_2
+from models.LinearNet_3 import LinearNet_3
 
 
 def load_model(cfg, input_size, num_hidden_neuron):
@@ -18,6 +19,8 @@ def load_model(cfg, input_size, num_hidden_neuron):
         return LinearNet_1(num_features=input_size, num_hidden_neuron=num_hidden_neuron)
     elif cfg["TRAIN"]["MODEL"] == "LinearNet_2":
         return LinearNet_2(num_features=input_size)
+    elif cfg["TRAIN"]["MODEL"] == "LinearNet_3":
+        return LinearNet_3(num_features=input_size, num_hidden_neuron=num_hidden_neuron)
     else:
         return LinearNet_1(num_features=input_size, num_hidden_neuron=num_hidden_neuron)
 
