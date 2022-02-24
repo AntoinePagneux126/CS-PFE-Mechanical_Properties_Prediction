@@ -7,6 +7,15 @@ DATASET:
       WHICH: "all"  # Either "all" or list of indexes. ex : [2] or [0, 1, 2] or [2, 0] ...
     NORMALIZE:
       TYPE: "StandardScaler"  # ["MinMaxScalar", "StandardScaler"]
+    REMOVE_FEATURES:
+      ACTIVE: False
+      WHICH: ["Linespeed (m/min)"]
+    REMOVE_SAMPLES:
+      ACTIVE: False
+      WHICH:
+        Direction: "T"  # ["T", "L"]
+        Type: "JI5"  # ["JI5", "I20"]
+
     TARGET: "rm"  # ["rm", "re02", "A80"]
   BATCH_SIZE: 32
   TEST_VALID_RATIO: [0.1, 0.2]

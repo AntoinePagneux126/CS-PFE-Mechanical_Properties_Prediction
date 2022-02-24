@@ -1,4 +1,4 @@
-Coilnr;Date;Direction;Type eprouvette;Th mm;Re02 Mpa;Rm Mpa;A80 x10%;C ppm;Mn ppm;Si ppm;P ppm;S ppm;Al ppm;Ti ppm;Cr ppm;Nb ppm;B ppm;Mo ppm;Linespeed (m/min);SKP elongation (%);Heating C/s 660 to 750;t_soaking_hot s;Cooling C/s;t_soaking_cold s;soaking_hot C;soaking_cold C
+Coilnr;Date;Direction;Type;Th mm;Re02 Mpa;Rm Mpa;A80 x10%;C ppm;Mn ppm;Si ppm;P ppm;S ppm;Al ppm;Ti ppm;Cr ppm;Nb ppm;B ppm;Mo ppm;Linespeed (m/min);SKP elongation (%);Heating C/s 660 to 750;t_soaking_hot s;Cooling C/s;t_soaking_cold s;soaking_hot C;soaking_cold C
 91445200;44148;T;JI5;1,6;628;1003;149;718;25260;2553;111;11;1517;242;3001;251;19;978;45;0,12;1,809315287;143,3333333;-14,14772727;70,8;763,5;454
 91443500;44148;T;JI5;2;650;1011;149;726;25200;2527;140;21;1529;202;3074;246;20;973;45;0,11;1,799761146;143,3333333;-14,07467532;70,8;762,75;458
 91445200;44148;T;I20;1,6;655;1023;134;718;25260;2553;111;11;1517;242;3001;251;19;978;45;0,12;1,809315287;143,3333333;-14,14772727;70,8;763,5;454

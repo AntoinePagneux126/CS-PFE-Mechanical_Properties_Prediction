@@ -25,7 +25,7 @@ class RegressionDataset(Dataset):
 
 
 def basic_random_split(
-    path_to_data, test_valid_ratio=(0.1, 0.2), which="all", preprocessing="MinMaxScalar"
+    path_to_data, preprocessing, test_valid_ratio=(0.1, 0.2), which="all"
 ):
     """This function split file according to a ratio to create
     training, validation and test dataset.
@@ -41,10 +41,14 @@ def basic_random_split(
     data_from_lines = load_files(path_to_data=path_to_data, which=which)
 
     # Transform qualitative informations into quantitative ones
-    data_from_lines = handle_qualitative_data(data_from_lines=data_from_lines)
+    data_from_lines = handle_qualitative_data(
+        data_from_lines=data_from_lines, preprocessing=preprocessing
+    )
 
     # Prepare features and targets
-    features_and_targets = remove_useless_features(data_from_lines=data_from_lines)
+    features_and_targets = remove_useless_features(
+        data_from_lines=data_from_lines, preprocessing=preprocessing
+    )
 
     for key in features_and_targets:
         features_and_targets[key]["dataset"] = create_x_and_y(
@@ -53,7 +57,8 @@ def basic_random_split(
 
     for key in features_and_targets:
         features_and_targets[key]["dataset"] = apply_preprocessing(
-            data=features_and_targets[key]["dataset"], type_=preprocessing
+            data=features_and_targets[key]["dataset"],
+            type_=preprocessing["NORMALIZE"]["TYPE"],
         )
 
     return features_and_targets
@@ -96,39 +101,74 @@ def load_files(path_to_data, which):
     return data
 
 
-def handle_qualitative_data(data_from_lines):
+def handle_qualitative_data(data_from_lines, preprocessing):
     """Transform qualitative data into quantitative ones.
 
     Args:
         data_from_lines (list): List of Dataframe containing data from each file.
+        preprocessing (dict): What type of preprocessing we want to apply (remove samples).
 
     Returns:
         list(pandas.core.frame.DataFrame): List of Dataframe containing data from each file.
     """
+    has_print = False
+    removed_values = ""
+    cleanup = {"Direction": {"L": 1, "T": -1}, "Type": {"JI5": -1, "I20": 1}}
+
     for data in data_from_lines:
-        data["Direction"] = [
-            1 if data["Direction"][i] == "L" else -1
-            for i in range(len(data["Direction"]))
-        ]
-        data["Type eprouvette"] = [
-            1 if data["Type eprouvette"][i] == "I20" else -1
-            for i in range(len(data["Direction"]))
-        ]
+        # Remove samples
+        if preprocessing["REMOVE_SAMPLES"]["ACTIVE"]:
+            for feature in preprocessing["REMOVE_SAMPLES"]["WHICH"]:
+                data.drop(
+                    np.where(
+                        data[feature]
+                        == preprocessing["REMOVE_SAMPLES"]["WHICH"][feature]
+                    )[0],
+                    axis=0,
+                    inplace=True,
+                )
+                if not has_print:
+                    removed_values += f'\t{feature} : {preprocessing["REMOVE_SAMPLES"]["WHICH"][feature]}\n'  # pylint: disable=line-too-long
+        data.replace(cleanup, inplace=True)
+        has_print = True
+
+    if removed_values:
+        print("\n##################")
+        print("# Remove samples #")
+        print("##################\n")
+        print(f"You removed : \n{removed_values}")
     return data_from_lines
 
 
-def remove_useless_features(data_from_lines):
+def remove_useless_features(data_from_lines, preprocessing):
     """Create features and targets
 
     Args:
         data_from_lines (list): List of Dataframe containing data from each file.
+        preprocessing (dict): What type of preprocessing we want to apply
+                                (remove features for example).
 
     Returns:
         dict : Dictionary containing features and target for each file.
     """
     data_dict = {}
+    to_be_removed = ["Coilnr", "Date"]
+    if preprocessing["REMOVE_FEATURES"]["ACTIVE"]:
+        for feature in preprocessing["REMOVE_FEATURES"]["WHICH"]:
+            to_be_removed += [feature] if feature in data_from_lines[0].columns else []
+
+        print("\n###################")
+        print("# Remove features #")
+        print("###################\n")
+        print(f"You removed : \n\t{to_be_removed}")
+
     for i, data in enumerate(data_from_lines):
-        filters = data[["Coilnr", "Date"]]
+        if data.empty:
+            continue
+
+        data.reset_index(inplace=True)
+
+        filters = data[to_be_removed]
         target_re02 = data[["Re02 Mpa"]]
         target_rm = data[["Rm Mpa"]]
         target_a = data[["A80 x10%"]]

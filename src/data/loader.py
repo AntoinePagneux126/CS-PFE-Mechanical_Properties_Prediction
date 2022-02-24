@@ -25,9 +25,9 @@ def main(cfg):  # pylint: disable=too-many-locals
     # Load the dataset for the training/validation/test sets
     data = basic_random_split(
         path_to_data=path_to_data,
+        preprocessing=cfg["DATASET"]["PREPROCESSING"],
         test_valid_ratio=cfg["DATASET"]["TEST_VALID_RATIO"],
         which=cfg["DATASET"]["PREPROCESSING"]["MERGE_FILES"]["WHICH"],
-        preprocessing=cfg["DATASET"]["PREPROCESSING"]["NORMALIZE"]["TYPE"],
     )
 
     # Select the target
