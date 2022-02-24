@@ -4,15 +4,51 @@ DATASET:
   DATA_FORMAT: csv
   PREPROCESSING:
     MERGE_FILES:
-      ACTIVE: True
-      WHICH: 0
+      WHICH: "all"  # Either "all" or list of indexes. ex : [2] or [0, 1, 2] or [2, 0] ...
     NORMALIZE:
       TYPE: "StandardScaler"  # ["MinMaxScalar", "StandardScaler"]
+    REMOVE_FEATURES:
+      ACTIVE: False
+      WHICH: ["Linespeed (m/min)"]
+    REMOVE_SAMPLES:
+      ACTIVE: False
+      WHICH:
+        Direction: "T"  # ["T", "L"]
+        Type: "JI5"  # ["JI5", "I20"]
+
     TARGET: "rm"  # ["rm", "re02", "A80"]
   BATCH_SIZE: 32
   TEST_VALID_RATIO: [0.1, 0.2]
   VERBOSITY: True
   NUM_THREADS: 4
+MODELS:
+  NN: False
+  ML:
+    ACTIVE: True
+    GRID_SEARCH: False
+    TYPE: 'RandomForest'  # ["RandomForest" ...]
+    RandomForest:
+      rm:
+        bootstrap: False
+        max_depth: 23
+        max_features: 12
+        min_samples_split: 6
+        n_estimators: 75
+        n_jobs: -1
+      re02:
+        bootstrap: False
+        max_depth: 23
+        max_features: 12
+        min_samples_split: 6
+        n_estimators: 75
+        n_jobs: -1
+      A80:
+        bootstrap: False
+        max_depth: 23
+        max_features: 12
+        min_samples_split: 6
+        n_estimators: 75
+        n_jobs: -1
 TRAIN:
   EPOCH: 3000
   CHECKPOINT_STEP: 500

@@ -2,6 +2,7 @@
 # pylint: disable=import-error
 import os
 import tqdm
+import numpy as np
 import pandas as pd
 
 from sklearn.model_selection import train_test_split
@@ -24,7 +25,7 @@ class RegressionDataset(Dataset):
 
 
 def basic_random_split(
-    path_to_data, test_valid_ratio=(0.1, 0.2), preprocessing="MinMaxScalar"
+    path_to_data, preprocessing, test_valid_ratio=(0.1, 0.2), which="all"
 ):
     """This function split file according to a ratio to create
     training, validation and test dataset.
@@ -37,13 +38,17 @@ def basic_random_split(
         dict: Dictionary containing every data to create a Dataset.
     """
     # Load the different files
-    data_from_lines = load_files(path_to_data=path_to_data)
+    data_from_lines = load_files(path_to_data=path_to_data, which=which)
 
     # Transform qualitative informations into quantitative ones
-    data_from_lines = handle_qualitative_data(data_from_lines=data_from_lines)
+    data_from_lines = handle_qualitative_data(
+        data_from_lines=data_from_lines, preprocessing=preprocessing
+    )
 
     # Prepare features and targets
-    features_and_targets = remove_useless_features(data_from_lines=data_from_lines)
+    features_and_targets = remove_useless_features(
+        data_from_lines=data_from_lines, preprocessing=preprocessing
+    )
 
     for key in features_and_targets:
         features_and_targets[key]["dataset"] = create_x_and_y(
@@ -52,69 +57,118 @@ def basic_random_split(
 
     for key in features_and_targets:
         features_and_targets[key]["dataset"] = apply_preprocessing(
-            data=features_and_targets[key]["dataset"], type_=preprocessing
+            data=features_and_targets[key]["dataset"],
+            type_=preprocessing["NORMALIZE"]["TYPE"],
         )
 
     return features_and_targets
 
 
-def load_files(path_to_data):
+def load_files(path_to_data, which):
     """Load data from different file.
 
     Args:
         path_to_data (str): path of the data root directory.
+        which (str or list): list of files we should load
 
     Returns:
         list(pandas.core.frame.DataFrame): List of Dataframe containing data from each file.
     """
     data = []
-    data_files = sorted(os.listdir(path_to_data))
+    data_files = np.array(sorted(os.listdir(path_to_data)))
+
+    # Verify if which is type list or str
+    which = [which] if isinstance(which, int) else which
+    # Select files to load
+    index_to_keep = (
+        np.arange(len(data_files))
+        if which == "all"
+        else set(which).intersection(np.arange(len(data_files)))
+    )
+
     if len(data_files) != 0:
         print("\n#################")
         print("# Loading files #")
         print("#################\n")
-        for datafile in tqdm.tqdm(data_files):
+        print(f"You selected : {data_files[list(index_to_keep)]}\n")
+        for datafile in tqdm.tqdm(data_files[list(index_to_keep)]):
             data.append(
                 pd.read_csv(
                     os.path.join(path_to_data, datafile), delimiter=";", decimal=","
                 )
             )
+
     return data
 
 
-def handle_qualitative_data(data_from_lines):
+def handle_qualitative_data(data_from_lines, preprocessing):
     """Transform qualitative data into quantitative ones.
 
     Args:
         data_from_lines (list): List of Dataframe containing data from each file.
+        preprocessing (dict): What type of preprocessing we want to apply (remove samples).
 
     Returns:
         list(pandas.core.frame.DataFrame): List of Dataframe containing data from each file.
     """
+    has_print = False
+    removed_values = ""
+    cleanup = {"Direction": {"L": 1, "T": -1}, "Type": {"JI5": -1, "I20": 1}}
+
     for data in data_from_lines:
-        data["Direction"] = [
-            1 if data["Direction"][i] == "L" else -1
-            for i in range(len(data["Direction"]))
-        ]
-        data["Type eprouvette"] = [
-            1 if data["Type eprouvette"][i] == "I20" else -1
-            for i in range(len(data["Direction"]))
-        ]
+        # Remove samples
+        if preprocessing["REMOVE_SAMPLES"]["ACTIVE"]:
+            for feature in preprocessing["REMOVE_SAMPLES"]["WHICH"]:
+                data.drop(
+                    np.where(
+                        data[feature]
+                        == preprocessing["REMOVE_SAMPLES"]["WHICH"][feature]
+                    )[0],
+                    axis=0,
+                    inplace=True,
+                )
+                if not has_print:
+                    removed_values += f'\t{feature} : {preprocessing["REMOVE_SAMPLES"]["WHICH"][feature]}\n'  # pylint: disable=line-too-long
+        data.replace(cleanup, inplace=True)
+        has_print = True
+
+    if removed_values:
+        print("\n##################")
+        print("# Remove samples #")
+        print("##################\n")
+        print(f"You removed : \n{removed_values}")
     return data_from_lines
 
 
-def remove_useless_features(data_from_lines):
+def remove_useless_features(data_from_lines, preprocessing):
     """Create features and targets
 
     Args:
         data_from_lines (list): List of Dataframe containing data from each file.
+        preprocessing (dict): What type of preprocessing we want to apply
+                                (remove features for example).
 
     Returns:
         dict : Dictionary containing features and target for each file.
     """
     data_dict = {}
+    to_be_removed = ["Coilnr", "Date"]
+    if preprocessing["REMOVE_FEATURES"]["ACTIVE"]:
+        for feature in preprocessing["REMOVE_FEATURES"]["WHICH"]:
+            to_be_removed += [feature] if feature in data_from_lines[0].columns else []
+
+        print("\n###################")
+        print("# Remove features #")
+        print("###################\n")
+        print(f"You removed : \n\t{to_be_removed}")
+
     for i, data in enumerate(data_from_lines):
-        filters = data[["Coilnr", "Date"]]
+        if data.empty:
+            continue
+
+        data.reset_index(inplace=True)
+
+        filters = data[to_be_removed]
         target_re02 = data[["Re02 Mpa"]]
         target_rm = data[["Rm Mpa"]]
         target_a = data[["A80 x10%"]]
@@ -251,3 +305,67 @@ def apply_preprocessing(data, type_):
     data["A80"]["x_test"] = scaler.transform(data["A80"]["x_test"])
 
     return data
+
+
+def merge_files(data, target_to_predict):
+    """Merge all files to create on dataset composed of different production lignes.
+
+    Args:
+        data (dict): Dictionary containing train, valid, test set for all lignes
+        target_to_predict (str): Either rm, re02 or A80
+
+    Returns:
+        (array, ...): x_train, y_train, x_valid, y_valid, x_test, y_test
+    """
+    x_train, y_train = None, None
+    x_valid, y_valid = None, None
+    x_test, y_test = None, None
+
+    for key in data.keys():
+        # Train
+        x_train = (
+            np.concatenate(
+                (x_train, data[key]["dataset"][target_to_predict]["x_train"]), axis=0
+            )
+            if x_train is not None
+            else data[key]["dataset"][target_to_predict]["x_train"]
+        )
+        y_train = (
+            np.concatenate(
+                (y_train, data[key]["dataset"][target_to_predict]["y_train"]), axis=0
+            )
+            if y_train is not None
+            else data[key]["dataset"][target_to_predict]["y_train"]
+        )
+        # Valid
+        x_valid = (
+            np.concatenate(
+                (x_valid, data[key]["dataset"][target_to_predict]["x_valid"]), axis=0
+            )
+            if x_valid is not None
+            else data[key]["dataset"][target_to_predict]["x_valid"]
+        )
+        y_valid = (
+            np.concatenate(
+                (y_valid, data[key]["dataset"][target_to_predict]["y_valid"]), axis=0
+            )
+            if y_valid is not None
+            else data[key]["dataset"][target_to_predict]["y_valid"]
+        )
+        # Test
+        x_test = (
+            np.concatenate(
+                (x_test, data[key]["dataset"][target_to_predict]["x_test"]), axis=0
+            )
+            if x_test is not None
+            else data[key]["dataset"][target_to_predict]["x_test"]
+        )
+        y_test = (
+            np.concatenate(
+                (y_test, data[key]["dataset"][target_to_predict]["y_test"]), axis=0
+            )
+            if y_test is not None
+            else data[key]["dataset"][target_to_predict]["y_test"]
+        )
+
+    return x_train, y_train, x_valid, y_valid, x_test, y_test
