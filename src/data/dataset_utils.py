@@ -2,6 +2,7 @@
 # pylint: disable=import-error
 import os
 import tqdm
+import numpy as np
 import pandas as pd
 
 from sklearn.model_selection import train_test_split
@@ -24,7 +25,7 @@ class RegressionDataset(Dataset):
 
 
 def basic_random_split(
-    path_to_data, test_valid_ratio=(0.1, 0.2), preprocessing="MinMaxScalar"
+    path_to_data, test_valid_ratio=(0.1, 0.2), which="all", preprocessing="MinMaxScalar"
 ):
     """This function split file according to a ratio to create
     training, validation and test dataset.
@@ -37,7 +38,7 @@ def basic_random_split(
         dict: Dictionary containing every data to create a Dataset.
     """
     # Load the different files
-    data_from_lines = load_files(path_to_data=path_to_data)
+    data_from_lines = load_files(path_to_data=path_to_data, which=which)
 
     # Transform qualitative informations into quantitative ones
     data_from_lines = handle_qualitative_data(data_from_lines=data_from_lines)
@@ -58,27 +59,40 @@ def basic_random_split(
     return features_and_targets
 
 
-def load_files(path_to_data):
+def load_files(path_to_data, which):
     """Load data from different file.
 
     Args:
         path_to_data (str): path of the data root directory.
+        which (str or list): list of files we should load
 
     Returns:
         list(pandas.core.frame.DataFrame): List of Dataframe containing data from each file.
     """
     data = []
-    data_files = sorted(os.listdir(path_to_data))
+    data_files = np.array(sorted(os.listdir(path_to_data)))
+
+    # Verify if which is type list or str
+    which = [which] if isinstance(which, int) else which
+    # Select files to load
+    index_to_keep = (
+        np.arange(len(data_files))
+        if which == "all"
+        else set(which).intersection(np.arange(len(data_files)))
+    )
+
     if len(data_files) != 0:
         print("\n#################")
         print("# Loading files #")
         print("#################\n")
-        for datafile in tqdm.tqdm(data_files):
+        print(f"You selected : {data_files[list(index_to_keep)]}\n")
+        for datafile in tqdm.tqdm(data_files[list(index_to_keep)]):
             data.append(
                 pd.read_csv(
                     os.path.join(path_to_data, datafile), delimiter=";", decimal=","
                 )
             )
+
     return data
 
 
@@ -251,3 +265,67 @@ def apply_preprocessing(data, type_):
     data["A80"]["x_test"] = scaler.transform(data["A80"]["x_test"])
 
     return data
+
+
+def merge_files(data, target_to_predict):
+    """Merge all files to create on dataset composed of different production lignes.
+
+    Args:
+        data (dict): Dictionary containing train, valid, test set for all lignes
+        target_to_predict (str): Either rm, re02 or A80
+
+    Returns:
+        (array, ...): x_train, y_train, x_valid, y_valid, x_test, y_test
+    """
+    x_train, y_train = None, None
+    x_valid, y_valid = None, None
+    x_test, y_test = None, None
+
+    for key in data.keys():
+        # Train
+        x_train = (
+            np.concatenate(
+                (x_train, data[key]["dataset"][target_to_predict]["x_train"]), axis=0
+            )
+            if x_train is not None
+            else data[key]["dataset"][target_to_predict]["x_train"]
+        )
+        y_train = (
+            np.concatenate(
+                (y_train, data[key]["dataset"][target_to_predict]["y_train"]), axis=0
+            )
+            if y_train is not None
+            else data[key]["dataset"][target_to_predict]["y_train"]
+        )
+        # Valid
+        x_valid = (
+            np.concatenate(
+                (x_valid, data[key]["dataset"][target_to_predict]["x_valid"]), axis=0
+            )
+            if x_valid is not None
+            else data[key]["dataset"][target_to_predict]["x_valid"]
+        )
+        y_valid = (
+            np.concatenate(
+                (y_valid, data[key]["dataset"][target_to_predict]["y_valid"]), axis=0
+            )
+            if y_valid is not None
+            else data[key]["dataset"][target_to_predict]["y_valid"]
+        )
+        # Test
+        x_test = (
+            np.concatenate(
+                (x_test, data[key]["dataset"][target_to_predict]["x_test"]), axis=0
+            )
+            if x_test is not None
+            else data[key]["dataset"][target_to_predict]["x_test"]
+        )
+        y_test = (
+            np.concatenate(
+                (y_test, data[key]["dataset"][target_to_predict]["y_test"]), axis=0
+            )
+            if y_test is not None
+            else data[key]["dataset"][target_to_predict]["y_test"]
+        )
+
+    return x_train, y_train, x_valid, y_valid, x_test, y_test

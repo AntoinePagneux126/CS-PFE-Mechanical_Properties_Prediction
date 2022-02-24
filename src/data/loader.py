@@ -4,10 +4,8 @@ import argparse
 import torch
 import yaml
 
-import numpy as np
-
 from torch.utils.data import DataLoader
-from data.dataset_utils import basic_random_split, RegressionDataset
+from data.dataset_utils import basic_random_split, merge_files, RegressionDataset
 
 
 def main(cfg):  # pylint: disable=too-many-locals
@@ -28,77 +26,15 @@ def main(cfg):  # pylint: disable=too-many-locals
     data = basic_random_split(
         path_to_data=path_to_data,
         test_valid_ratio=cfg["DATASET"]["TEST_VALID_RATIO"],
+        which=cfg["DATASET"]["PREPROCESSING"]["MERGE_FILES"]["WHICH"],
         preprocessing=cfg["DATASET"]["PREPROCESSING"]["NORMALIZE"]["TYPE"],
     )
 
     target_to_predict = cfg["DATASET"]["PREPROCESSING"]["TARGET"]
 
-    if cfg["DATASET"]["PREPROCESSING"]["MERGE_FILES"]["ACTIVE"]:
-        x_train, y_train = None, None
-        x_valid, y_valid = None, None
-        x_test, y_test = None, None
-        for key in data:
-            # Train
-            x_train = (
-                np.concatenate(
-                    (x_train, data[key]["dataset"][target_to_predict]["x_train"]),
-                    axis=0,
-                )
-                if x_train is not None
-                else data[key]["dataset"][target_to_predict]["x_train"]
-            )
-            y_train = (
-                np.concatenate(
-                    (y_train, data[key]["dataset"][target_to_predict]["y_train"]),
-                    axis=0,
-                )
-                if y_train is not None
-                else data[key]["dataset"][target_to_predict]["y_train"]
-            )
-            # Valid
-            x_valid = (
-                np.concatenate(
-                    (x_valid, data[key]["dataset"][target_to_predict]["x_valid"]),
-                    axis=0,
-                )
-                if x_valid is not None
-                else data[key]["dataset"][target_to_predict]["x_valid"]
-            )
-            y_valid = (
-                np.concatenate(
-                    (y_valid, data[key]["dataset"][target_to_predict]["y_valid"]),
-                    axis=0,
-                )
-                if y_valid is not None
-                else data[key]["dataset"][target_to_predict]["y_valid"]
-            )
-            # Test
-            x_test = (
-                np.concatenate(
-                    (x_test, data[key]["dataset"][target_to_predict]["x_test"]), axis=0
-                )
-                if x_test is not None
-                else data[key]["dataset"][target_to_predict]["x_test"]
-            )
-            y_test = (
-                np.concatenate(
-                    (y_test, data[key]["dataset"][target_to_predict]["y_test"]), axis=0
-                )
-                if y_test is not None
-                else data[key]["dataset"][target_to_predict]["y_test"]
-            )
-
-    else:
-        dataset = data[cfg["DATASET"]["PREPROCESSING"]["MERGE_FILES"]["WHICH"]]
-        # Train
-        x_train = dataset["dataset"][target_to_predict]["x_train"]
-        y_train = dataset["dataset"][target_to_predict]["y_train"]
-        # Valid
-        x_valid = dataset["dataset"][target_to_predict]["x_valid"]
-        y_valid = dataset["dataset"][target_to_predict]["y_valid"]
-        # Test
-        x_test = dataset["dataset"][target_to_predict]["x_test"]
-        y_test = dataset["dataset"][target_to_predict]["y_test"]
+    x_train, y_train, x_valid, y_valid, x_test, y_test = merge_files(
+        data=data, target_to_predict=target_to_predict
+    )
 
     if not cfg["MODELS"]["NN"]:
         return (

@@ -4,8 +4,7 @@ DATASET:
   DATA_FORMAT: csv
   PREPROCESSING:
     MERGE_FILES:
-      ACTIVE: True
-      WHICH: 0
+      WHICH: "all"  # Either "all" or list of indexes. ex : [2] or [0, 1, 2] or [2, 0] ...
     NORMALIZE:
       TYPE: "StandardScaler"  # ["MinMaxScalar", "StandardScaler"]
     TARGET: "rm"  # ["rm", "re02", "A80"]
