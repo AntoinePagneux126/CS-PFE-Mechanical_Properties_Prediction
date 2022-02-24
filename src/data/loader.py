@@ -30,7 +30,9 @@ def main(cfg):  # pylint: disable=too-many-locals
         preprocessing=cfg["DATASET"]["PREPROCESSING"]["NORMALIZE"]["TYPE"],
     )
 
+    # Select the target
     target_to_predict = cfg["DATASET"]["PREPROCESSING"]["TARGET"]
+    print(f"\nYou want to predict : {cfg['DATASET']['PREPROCESSING']['TARGET']}")
 
     x_train, y_train, x_valid, y_valid, x_test, y_test = merge_files(
         data=data, target_to_predict=target_to_predict

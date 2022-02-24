@@ -60,7 +60,13 @@ def main_ml(cfg, path_to_config):  # pylint: disable=too-many-locals
     if cfg["MODELS"]["ML"]["GRID_SEARCH"]:
         model, params = launch_grid_search(cfg, preprocessed_data)
 
-        with open(os.path.join(save_dir, "best_params.json"), "w") as outfile:
+        with open(
+            os.path.join(
+                save_dir,
+                f"best_params_{cfg['DATASET']['PREPROCESSING']['TARGET']}.json",
+            ),
+            "w",
+        ) as outfile:
             json.dump(params, outfile, indent=2)
 
     else:
