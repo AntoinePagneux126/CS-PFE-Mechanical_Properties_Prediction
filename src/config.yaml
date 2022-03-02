@@ -30,27 +30,27 @@ MODELS:
     RandomForest:
       rm:
         bootstrap: False
-        max_depth: 23
-        max_features: 12
+        max_depth: 21
+        max_features: 10
         min_samples_split: 6
-        n_estimators: 75
+        n_estimators: 100
         n_jobs: -1
       re02:
         bootstrap: False
-        max_depth: 23
-        max_features: 12
+        max_depth: 26
+        max_features: 10
         min_samples_split: 6
-        n_estimators: 75
+        n_estimators: 110
         n_jobs: -1
       A80:
         bootstrap: False
-        max_depth: 23
-        max_features: 12
-        min_samples_split: 6
-        n_estimators: 75
+        max_depth: 25
+        max_features: 11
+        min_samples_split: 4
+        n_estimators: 105
         n_jobs: -1
 TRAIN:
-  EPOCH: 3000
+  EPOCH: 2
   CHECKPOINT_STEP: 500
   MODEL: LinearNet_2
   NUM_HIDDEN_NEURON: 50

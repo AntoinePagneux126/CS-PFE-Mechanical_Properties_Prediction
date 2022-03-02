@@ -29,12 +29,13 @@ def plot_y_pred_y_true(y_true, y_pred, path_to_save):
     plt.show()
 
 
-def plot_all_y_pred_y_true(y_true, y_pred, path_to_save):
+def plot_all_y_pred_y_true(y_true, y_pred, metrics: dict, path_to_save):
     """Plot all y_preds with respect to y_trues
 
     Args:
         y_true (dict): Ground truth target values
         y_pred (dict): Estimated target values
+        metrics (dict): Metrics (RMSE, R2)
         path_to_save (str): Path to file
     """
     fig, ax = plt.subplots(2, 2, figsize=(10, 5))
@@ -54,6 +55,27 @@ def plot_all_y_pred_y_true(y_true, y_pred, path_to_save):
     )
     ax[0, 0].set_xlabel("Ground truth target values")
     ax[0, 0].set_ylabel("Estimated target values")
+    ax[0, 0].text(
+        x=max(y_true["train"]),
+        y=min(y_pred["train"]) + 20,
+        s="R2=" + str(round(metrics["R2_train"], 3)),
+        horizontalalignment="right",
+        verticalalignment="center",
+    )
+    ax[0, 0].text(
+        x=max(y_true["train"]),
+        y=min(y_pred["train"]) + 10,
+        s="MSE=" + str(round(metrics["MSE_train"], 3)),
+        horizontalalignment="right",
+        verticalalignment="center",
+    )
+    ax[0, 0].text(
+        x=max(y_true["train"]),
+        y=min(y_pred["train"]),
+        s="RMSE=" + str(round(metrics["RMSE_train"], 3)),
+        horizontalalignment="right",
+        verticalalignment="center",
+    )
     ax[0, 0].legend()
 
     ax[0, 1].plot(y_true["valid"], y_pred["valid"], "bo", label="Estimated target")
@@ -70,6 +92,27 @@ def plot_all_y_pred_y_true(y_true, y_pred, path_to_save):
     )
     ax[0, 1].set_xlabel("Ground truth target values")
     ax[0, 1].set_ylabel("Estimated target values")
+    ax[0, 1].text(
+        x=max(y_true["valid"]),
+        y=min(y_pred["valid"]) + 20,
+        s="R2=" + str(round(metrics["R2_val"], 3)),
+        horizontalalignment="right",
+        verticalalignment="center",
+    )
+    ax[0, 1].text(
+        x=max(y_true["valid"]),
+        y=min(y_pred["valid"]) + 10,
+        s="MSE=" + str(round(metrics["MSE_val"], 3)),
+        horizontalalignment="right",
+        verticalalignment="center",
+    )
+    ax[0, 1].text(
+        x=max(y_true["valid"]),
+        y=min(y_pred["valid"]),
+        s="RMSE=" + str(round(metrics["RMSE_val"], 3)),
+        horizontalalignment="right",
+        verticalalignment="center",
+    )
     ax[0, 1].legend()
 
     ax[1, 0].plot(y_true["test"], y_pred["test"], "bo", label="Estimated target")
@@ -85,6 +128,27 @@ def plot_all_y_pred_y_true(y_true, y_pred, path_to_save):
     )
     ax[1, 0].set_xlabel("Ground truth target values")
     ax[1, 0].set_ylabel("Estimated target values")
+    ax[1, 0].text(
+        x=max(y_true["test"]),
+        y=min(y_pred["test"]) + 20,
+        s="R2=" + str(round(metrics["R2_test"], 3)),
+        horizontalalignment="right",
+        verticalalignment="center",
+    )
+    ax[1, 0].text(
+        x=max(y_true["test"]),
+        y=min(y_pred["test"]) + 10,
+        s="MSE=" + str(round(metrics["MSE_test"], 3)),
+        horizontalalignment="right",
+        verticalalignment="center",
+    )
+    ax[1, 0].text(
+        x=max(y_true["test"]),
+        y=min(y_pred["test"]),
+        s="RMSE=" + str(round(metrics["RMSE_test"], 3)),
+        horizontalalignment="right",
+        verticalalignment="center",
+    )
     ax[1, 0].legend()
 
     ax[1, 1].plot(y_true["train"], y_pred["train"], "bo", label="Train")
@@ -97,6 +161,99 @@ def plot_all_y_pred_y_true(y_true, y_pred, path_to_save):
     ax[1, 1].set_xlabel("Ground truth target values")
     ax[1, 1].set_ylabel("Estimated target values")
     ax[1, 1].legend()
+
+    plt.savefig(os.path.join(path_to_save, "y_pred_y_true.png"))
+    plt.show()
+
+
+def plot_partial_y_pred_y_true(y_true, y_pred, metrics: dict, path_to_save):
+    """Plot partial y_preds with respect to y_trues
+
+    Args:
+        y_true (dict): Ground truth target values
+        y_pred (dict): Estimated target values
+        metrics (dict): Metrics (RMSE, R2)
+        path_to_save (str): Path to file
+    """
+    fig, ax = plt.subplots(2, 1, figsize=(10, 5))
+    fig.tight_layout(pad=3)
+
+    ax[0].plot(y_true["train"], y_pred["train"], "bo", label="Estimated target")
+    ax[0].plot(
+        [min(y_true["train"]), max(y_true["train"])],
+        [min(y_pred["train"]), max(y_pred["train"])],
+        "r",
+        label="y=x",
+    )
+
+    ax[0].set_title(
+        "Train: $R_{m}$ estimated with respect to ground truth $R_{m}$",
+        fontsize="large",
+    )
+    ax[0].set_xlabel("Ground truth target values")
+    ax[0].set_ylabel("Estimated target values")
+
+    ax[0].text(
+        x=max(y_true["train"]),
+        y=min(y_pred["train"]) + 20,
+        s="R2=" + str(round(metrics["R2_train"], 3)),
+        horizontalalignment="right",
+        verticalalignment="center",
+    )
+    ax[0].text(
+        x=max(y_true["train"]),
+        y=min(y_pred["train"]) + 10,
+        s="MSE=" + str(round(metrics["MSE_train"], 3)),
+        horizontalalignment="right",
+        verticalalignment="center",
+    )
+    ax[0].text(
+        x=max(y_true["train"]),
+        y=min(y_pred["train"]),
+        s="RMSE=" + str(round(metrics["RMSE_train"], 3)),
+        horizontalalignment="right",
+        verticalalignment="center",
+    )
+    ax[0].legend()
+
+    ax[1].plot(y_true["valid"], y_pred["valid"], "bo", label="Estimated target")
+    ax[1].plot(
+        [min(y_true["valid"]), max(y_true["valid"])],
+        [min(y_pred["valid"]), max(y_pred["valid"])],
+        "r",
+        label="y=x",
+    )
+
+    ax[1].set_title(
+        "Valid: $R_{m}$ estimated with respect to ground truth $R_{m}$",
+        fontsize="large",
+    )
+    ax[1].set_xlabel("Ground truth target values")
+    ax[1].set_ylabel("Estimated target values")
+
+    ax[1].text(
+        x=max(y_true["valid"]),
+        y=min(y_pred["valid"]) + 20,
+        s="R2=" + str(round(metrics["R2_val"], 3)),
+        horizontalalignment="right",
+        verticalalignment="center",
+    )
+    ax[1].text(
+        x=max(y_true["valid"]),
+        y=min(y_pred["valid"]) + 10,
+        s="MSE=" + str(round(metrics["MSE_val"], 3)),
+        horizontalalignment="right",
+        verticalalignment="center",
+    )
+    ax[1].text(
+        x=max(y_true["valid"]),
+        y=min(y_pred["valid"]),
+        s="RMSE=" + str(round(metrics["RMSE_val"], 3)),
+        horizontalalignment="right",
+        verticalalignment="center",
+    )
+
+    ax[1].legend()
 
     plt.savefig(os.path.join(path_to_save, "y_pred_y_true.png"))
     plt.show()
