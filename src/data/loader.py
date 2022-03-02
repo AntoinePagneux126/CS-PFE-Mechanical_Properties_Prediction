@@ -17,13 +17,14 @@ def main(cfg):  # pylint: disable=too-many-locals
     Returns:
         tuple[DataLoader, DataLoader]: train and validation DataLoader
         DataLoader: test DataLoader
+        Pandas.core.indexes.base.Index : Names of the features
     """
 
     # Set data path
     path_to_data = cfg["DATA_DIR"]
 
     # Load the dataset for the training/validation/test sets
-    data = basic_random_split(
+    data, features_names = basic_random_split(
         path_to_data=path_to_data,
         preprocessing=cfg["DATASET"]["PREPROCESSING"],
         test_valid_ratio=cfg["DATASET"]["TEST_VALID_RATIO"],
@@ -47,6 +48,7 @@ def main(cfg):  # pylint: disable=too-many-locals
                 "y_valid": y_valid,
             },
             {"x_test": x_test, "y_test": y_test},
+            features_names,
         )
 
     # Create train, valid and test dataset
