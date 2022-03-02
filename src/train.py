@@ -75,26 +75,42 @@ def main_ml(cfg, path_to_config):  # pylint: disable=too-many-locals
     model.fit(X=preprocessed_data["x_train"], y=preprocessed_data["y_train"])
     pickle.dump(model, open(os.path.join(save_dir, "model.pck"), "wb"))
 
+    # Compute predictions
     y_pred = model.predict(preprocessed_data["x_valid"])
+    y_train_true = preprocessed_data["y_train"]
+    y_valid_true = preprocessed_data["y_valid"]
+    y_train_pred = model.predict(preprocessed_data["x_train"])
 
-    train_loss = mean_squared_error(
-        preprocessed_data["y_train"], model.predict(preprocessed_data["x_train"])
-    )
-    train_r2 = r2_score(
-        preprocessed_data["y_train"], model.predict(preprocessed_data["x_train"])
-    )
-    val_loss = mean_squared_error(preprocessed_data["y_valid"], y_pred)
-    val_r2 = r2_score(preprocessed_data["y_valid"], y_pred)
+    # Compute metrics
+    metrics = {}
 
+    metrics["MSE_train"] = mean_squared_error(y_train_true, y_train_pred)
+    metrics["RMSE_train"] = np.sqrt(metrics["MSE_train"])
+    metrics["R2_train"] = r2_score(y_train_true, y_train_pred)
+    metrics["MSE_val"] = mean_squared_error(y_valid_true, y_pred)
+    metrics["RMSE_val"] = np.sqrt(metrics["MSE_val"])
+    metrics["R2_val"] = r2_score(y_valid_true, y_pred)
+
+    # Print results
     print("\n###########")
     print("# Results #")
     print("###########\n")
 
-    print(f"Train RMSE: {np.sqrt(train_loss)} | Train r2: {train_r2}")
-    print(f"Valid RMSE: {np.sqrt(val_loss)} | Valid r2: {val_r2}")
+    print(f"Train RMSE: {metrics['RMSE_train']} | Train r2: {metrics['R2_train']}")
+    print(f"Valid RMSE: {metrics['RMSE_val']} | Valid r2: {metrics['R2_val']}")
+
+    y_true = {"train": y_train_true, "valid": y_valid_true}
+    y_pred = {"train": y_train_pred, "valid": y_pred}
+
+    # Plot and save resuslts
+    vis.plot_partial_y_pred_y_true(
+        y_true=y_true, y_pred=y_pred, metrics=metrics, path_to_save=save_dir
+    )
 
 
-def main_nn(cfg, path_to_config):  # pylint: disable=too-many-locals
+def main_nn(
+    cfg, path_to_config
+):  # pylint: disable=too-many-locals, too-many-statements
     """Main pipeline to train a model
 
     Args:
@@ -184,6 +200,8 @@ def main_nn(cfg, path_to_config):  # pylint: disable=too-many-locals
         )
 
     # Compute Metrics
+    metrics = {}
+
     train_loss, train_r2, y_train_true, y_train_pred = test_one_epoch(
         model, train_loader, f_loss, device, return_predictions=True
     )
@@ -194,18 +212,32 @@ def main_nn(cfg, path_to_config):  # pylint: disable=too-many-locals
         model, test_loader, f_loss, device, return_predictions=True
     )
 
+    metrics["MSE_train"] = train_loss
+    metrics["RMSE_train"] = np.sqrt(metrics["MSE_train"])
+    metrics["R2_train"] = train_r2
+
+    metrics["MSE_val"] = val_loss
+    metrics["RMSE_val"] = np.sqrt(metrics["MSE_val"])
+    metrics["R2_val"] = val_r2
+
+    metrics["MSE_test"] = test_loss
+    metrics["RMSE_test"] = np.sqrt(metrics["MSE_test"])
+    metrics["R2_test"] = test_r2
+
     print("\n###########")
     print("# Results #")
     print("###########\n")
 
-    print(f"Train MSE: {train_loss} | Train r2: {train_r2}")
-    print(f"Valid MSE: {val_loss} | Valid r2: {val_r2}")
-    print(f"Test MSE: {test_loss} | Test r2: {test_r2}")
+    print(f"Train RMSE: {metrics['RMSE_train']} | Train r2: {train_r2}")
+    print(f"Valid RMSE: {metrics['RMSE_val']}   | Valid r2: {val_r2}")
+    print(f"Test RMSE: {metrics['RMSE_test']}   | Test r2: {test_r2}")
 
     y_true = {"train": y_train_true, "valid": y_valid_true, "test": y_test_true}
     y_pred = {"train": y_train_pred, "valid": y_valid_pred, "test": y_test_pred}
 
-    vis.plot_all_y_pred_y_true(y_true=y_true, y_pred=y_pred, path_to_save=save_dir)
+    vis.plot_all_y_pred_y_true(
+        y_true=y_true, y_pred=y_pred, metrics=metrics, path_to_save=save_dir
+    )
 
 
 if __name__ == "__main__":
