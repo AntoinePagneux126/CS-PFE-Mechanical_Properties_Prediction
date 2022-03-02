@@ -52,8 +52,8 @@ MODELS:
 TRAIN:
   EPOCH: 2
   CHECKPOINT_STEP: 500
-  MODEL: LinearNet_2
-  NUM_HIDDEN_NEURON: 50
+  MODEL: LinearNet_3
+  NUM_HIDDEN_NEURON: 64
   LOG_DIR: 'tensorboard/metrics'
   SAVE_DIR: '../models'
   LR:
@@ -69,3 +69,5 @@ TRAIN:
       STEP_SIZE: 500
 TEST:
   BATCH_SIZE: 16
+  SAVE_DIR: '../res'
+  PATH_TO_MODEL: '../models/linearnet_3_0/best_model.pth'
