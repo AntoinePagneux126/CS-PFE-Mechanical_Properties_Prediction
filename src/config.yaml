@@ -8,8 +8,8 @@ DATASET:
     NORMALIZE:
       TYPE: "StandardScaler"  # ["MinMaxScalar", "StandardScaler"]
     REMOVE_FEATURES:
-      ACTIVE: False
-      WHICH: ["Linespeed (m/min)"]
+      ACTIVE: True
+      WHICH: ["Linespeed (m/min)", "B ppm"]
     REMOVE_SAMPLES:
       ACTIVE: False
       WHICH:
