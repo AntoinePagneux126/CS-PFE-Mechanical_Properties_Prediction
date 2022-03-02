@@ -16,7 +16,7 @@ DATASET:
         Direction: "T"  # ["T", "L"]
         Type: "JI5"  # ["JI5", "I20"]
 
-    TARGET: "rm"  # ["rm", "re02", "A80"]
+    TARGET: "A80"  # ["rm", "re02", "A80"]
   BATCH_SIZE: 32
   TEST_VALID_RATIO: [0.1, 0.2]
   VERBOSITY: True
