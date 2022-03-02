@@ -47,7 +47,7 @@ def main_ml(cfg, path_to_config):  # pylint: disable=too-many-locals
         path_to_config(string): path to the config file
     """
     # Load data
-    preprocessed_data, _ = loader.main(cfg=cfg)
+    preprocessed_data, _, features_name = loader.main(cfg=cfg)
 
     # Init directory to save model saving best models
     top_logdir = cfg["TRAIN"]["SAVE_DIR"]
@@ -116,6 +116,21 @@ def main_ml(cfg, path_to_config):  # pylint: disable=too-many-locals
         path_to_save=save_dir,
         target_name=target_name,
     )
+
+    # (Plot and) Save the features importance
+    if cfg["MODELS"]["ML"]["TYPE"] in [
+        "RandomForest",
+        "ExtraTrees",
+        "GradientBoosting",
+    ]:
+        importances = model.feature_importances_
+        vis.plot_feature_importance(
+            importances,
+            features_name,
+            cfg["MODELS"]["ML"]["TYPE"],
+            save_dir,
+            target_name,
+        )
 
 
 def main_nn(

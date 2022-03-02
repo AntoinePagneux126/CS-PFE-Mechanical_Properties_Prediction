@@ -11,18 +11,18 @@ DATASET:
       ACTIVE: False
       WHICH: ["Linespeed (m/min)"]
     REMOVE_SAMPLES:
-      ACTIVE: False
+      ACTIVE: True
       WHICH:
-        Direction: "T"  # ["T", "L"]
+        #Direction: "T"  # ["T", "L"]
         Type: "JI5"  # ["JI5", "I20"]
 
-    TARGET: "A80"  # ["rm", "re02", "A80"]
+    TARGET: "rm"  # ["rm", "re02", "A80"]
   BATCH_SIZE: 32
   TEST_VALID_RATIO: [0.1, 0.2]
   VERBOSITY: True
   NUM_THREADS: 4
 MODELS:
-  NN: False
+  NN: True
   ML:
     ACTIVE: True
     GRID_SEARCH: False

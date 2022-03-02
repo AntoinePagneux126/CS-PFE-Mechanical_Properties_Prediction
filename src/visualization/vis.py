@@ -1,7 +1,10 @@
 """This module define functions to visualize different results."""
 # pylint: disable=invalid-name
 import os
+import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 
 
 def plot_y_pred_y_true(y_true, y_pred, path_to_save, target_name: str = "$R_{m}$"):
@@ -11,6 +14,7 @@ def plot_y_pred_y_true(y_true, y_pred, path_to_save, target_name: str = "$R_{m}$
         y_true (array): Ground truth target values
         y_pred (array): Estimated target values
         path_to_save (str): Path to file
+        target_name (str) : Name of the target, formated in TeX
     """
     fig = plt.figure(figsize=(8, 15))
     ax = fig.add_subplot(1, 1, 1)
@@ -40,6 +44,7 @@ def plot_all_y_pred_y_true(
         y_pred (dict): Estimated target values
         metrics (dict): Metrics (RMSE, R2)
         path_to_save (str): Path to file
+        target_name (str) : Name of the target, formated in TeX
     """
     fig, ax = plt.subplots(2, 2, figsize=(10, 5))
     fig.tight_layout(pad=3)
@@ -181,6 +186,7 @@ def plot_partial_y_pred_y_true(
         y_pred (dict): Estimated target values
         metrics (dict): Metrics (RMSE, R2)
         path_to_save (str): Path to file
+        target_name (str) : Name of the target, formated in TeX
     """
     fig, ax = plt.subplots(2, 1, figsize=(10, 5))
     fig.tight_layout(pad=3)
@@ -264,3 +270,43 @@ def plot_partial_y_pred_y_true(
 
     plt.savefig(os.path.join(path_to_save, "y_pred_y_true.png"))
     plt.show()
+
+
+def plot_feature_importance(
+    importance, names, model_type, path_to_save: str, target_name: str = "$R_{m}$"
+):
+    """Plot feature importance based on ML mpdel used
+
+    Args:
+        importance (list): feature importance values
+        names (list): feature names
+        model_type (string): Model used
+        path_to_save (str): Path to file
+        target_name (str) : Name of the target, formated in TeX
+    """
+
+    # Create arrays from feature importance and feature names
+    feature_importance = np.array(importance)
+    feature_names = np.array(names)
+
+    # Create a DataFrame using a Dictionary
+    data = {"feature_names": feature_names, "feature_importance": feature_importance}
+    fi_df = pd.DataFrame(data)
+
+    # Sort the DataFrame in order decreasing feature importance
+    fi_df.sort_values(by=["feature_importance"], ascending=False, inplace=True)
+
+    # Define size of bar plot
+    fig = plt.figure(figsize=(18, 8))
+    # Plot Searborn bar chart
+    sns.barplot(
+        x=fi_df["feature_importance"][0 : min(20, len(fi_df))],
+        y=fi_df["feature_names"][0 : min(20, len(fi_df))],
+    )
+    # Add chart labels
+    plt.title(f"{model_type} - Features Importance for {target_name} prediction")
+    plt.xlabel("Feature Importance")
+    plt.ylabel("Feature Names")
+
+    plt.savefig(path_to_save + "/feature_importance_" + model_type + ".png")
+    plt.close(fig)

@@ -36,6 +36,7 @@ def basic_random_split(
 
     Returns:
         dict: Dictionary containing every data to create a Dataset.
+        Pandas.core.indexes.base.Index : Names of the features
     """
     # Load the different files
     data_from_lines = load_files(path_to_data=path_to_data, which=which)
@@ -46,7 +47,7 @@ def basic_random_split(
     )
 
     # Prepare features and targets
-    features_and_targets = remove_useless_features(
+    features_and_targets, features_columns = remove_useless_features(
         data_from_lines=data_from_lines, preprocessing=preprocessing
     )
 
@@ -61,7 +62,7 @@ def basic_random_split(
             type_=preprocessing["NORMALIZE"]["TYPE"],
         )
 
-    return features_and_targets
+    return features_and_targets, features_columns
 
 
 def load_files(path_to_data, which):
@@ -150,6 +151,7 @@ def remove_useless_features(data_from_lines, preprocessing):
 
     Returns:
         dict : Dictionary containing features and target for each file.
+        Pandas.core.indexes.base.Index : Names of the features
     """
     data_dict = {}
     to_be_removed = ["Coilnr", "Date"]
@@ -166,8 +168,6 @@ def remove_useless_features(data_from_lines, preprocessing):
         if data.empty:
             continue
 
-        data.reset_index(inplace=True)
-
         filters = data[to_be_removed]
         target_re02 = data[["Re02 Mpa"]]
         target_rm = data[["Rm Mpa"]]
@@ -181,7 +181,7 @@ def remove_useless_features(data_from_lines, preprocessing):
             "rm": target_rm,
             "A80": target_a,
         }
-    return data_dict
+    return data_dict, features.columns
 
 
 def create_x_and_y(input_data, test_valid_ratio):  # pylint: disable=too-many-locals
