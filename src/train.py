@@ -103,8 +103,18 @@ def main_ml(cfg, path_to_config):  # pylint: disable=too-many-locals
     y_pred = {"train": y_train_pred, "valid": y_pred}
 
     # Plot and save resuslts
+    target_name = "$R_{m}$"
+    if cfg["DATASET"]["PREPROCESSING"]["TARGET"] == "re02":
+        target_name = "$R_{e02}$"
+    elif cfg["DATASET"]["PREPROCESSING"]["TARGET"] == "A80":
+        target_name = "$A_{80}$"
+
     vis.plot_partial_y_pred_y_true(
-        y_true=y_true, y_pred=y_pred, metrics=metrics, path_to_save=save_dir
+        y_true=y_true,
+        y_pred=y_pred,
+        metrics=metrics,
+        path_to_save=save_dir,
+        target_name=target_name,
     )
 
 
@@ -235,8 +245,18 @@ def main_nn(
     y_true = {"train": y_train_true, "valid": y_valid_true, "test": y_test_true}
     y_pred = {"train": y_train_pred, "valid": y_valid_pred, "test": y_test_pred}
 
+    # Plot and save resuslts
+    target_name = "$R_{m}$"
+    if cfg["DATASET"]["PREPROCESSING"]["TARGET"] == "re02":
+        target_name = "$R_{e02}$"
+    elif cfg["DATASET"]["PREPROCESSING"]["TARGET"] == "A80":
+        target_name = "$A_{80}$"
     vis.plot_all_y_pred_y_true(
-        y_true=y_true, y_pred=y_pred, metrics=metrics, path_to_save=save_dir
+        y_true=y_true,
+        y_pred=y_pred,
+        metrics=metrics,
+        path_to_save=save_dir,
+        target_name=target_name,
     )
 
 

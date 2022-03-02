@@ -4,7 +4,7 @@ import os
 import matplotlib.pyplot as plt
 
 
-def plot_y_pred_y_true(y_true, y_pred, path_to_save):
+def plot_y_pred_y_true(y_true, y_pred, path_to_save, target_name: str = "$R_{m}$"):
     """Plot y_pred with respect to y_true
 
     Args:
@@ -19,7 +19,8 @@ def plot_y_pred_y_true(y_true, y_pred, path_to_save):
     ax.plot([min(y_true), max(y_true)], [min(y_pred), max(y_pred)], "r", label="y=x")
 
     ax.set_title(
-        "MLP: $R_{m}$ estimated with respect to ground truth $R_{m}$", fontsize="large"
+        f"MLP: {target_name} estimated with respect to ground truth {target_name}",
+        fontsize="large",
     )
     ax.set_xlabel("Ground truth target values")
     ax.set_ylabel("Estimated target values")
@@ -29,7 +30,9 @@ def plot_y_pred_y_true(y_true, y_pred, path_to_save):
     plt.show()
 
 
-def plot_all_y_pred_y_true(y_true, y_pred, metrics: dict, path_to_save):
+def plot_all_y_pred_y_true(
+    y_true, y_pred, metrics: dict, path_to_save, target_name: str = "$R_{m}$"
+):
     """Plot all y_preds with respect to y_trues
 
     Args:
@@ -50,21 +53,21 @@ def plot_all_y_pred_y_true(y_true, y_pred, metrics: dict, path_to_save):
     )
 
     ax[0, 0].set_title(
-        "Train: $R_{m}$ estimated with respect to ground truth $R_{m}$",
+        f"Train: {target_name} estimated with respect to ground truth {target_name}",
         fontsize="large",
     )
     ax[0, 0].set_xlabel("Ground truth target values")
     ax[0, 0].set_ylabel("Estimated target values")
     ax[0, 0].text(
         x=max(y_true["train"]),
-        y=min(y_pred["train"]) + 20,
+        y=min(y_pred["train"]) + 30,
         s="R2=" + str(round(metrics["R2_train"], 3)),
         horizontalalignment="right",
         verticalalignment="center",
     )
     ax[0, 0].text(
         x=max(y_true["train"]),
-        y=min(y_pred["train"]) + 10,
+        y=min(y_pred["train"]) + 15,
         s="MSE=" + str(round(metrics["MSE_train"], 3)),
         horizontalalignment="right",
         verticalalignment="center",
@@ -87,21 +90,21 @@ def plot_all_y_pred_y_true(y_true, y_pred, metrics: dict, path_to_save):
     )
 
     ax[0, 1].set_title(
-        "Valid: $R_{m}$ estimated with respect to ground truth $R_{m}$",
+        f"Valid: {target_name} estimated with respect to ground truth {target_name}",
         fontsize="large",
     )
     ax[0, 1].set_xlabel("Ground truth target values")
     ax[0, 1].set_ylabel("Estimated target values")
     ax[0, 1].text(
         x=max(y_true["valid"]),
-        y=min(y_pred["valid"]) + 20,
+        y=min(y_pred["valid"]) + 30,
         s="R2=" + str(round(metrics["R2_val"], 3)),
         horizontalalignment="right",
         verticalalignment="center",
     )
     ax[0, 1].text(
         x=max(y_true["valid"]),
-        y=min(y_pred["valid"]) + 10,
+        y=min(y_pred["valid"]) + 15,
         s="MSE=" + str(round(metrics["MSE_val"], 3)),
         horizontalalignment="right",
         verticalalignment="center",
@@ -124,20 +127,21 @@ def plot_all_y_pred_y_true(y_true, y_pred, metrics: dict, path_to_save):
     )
 
     ax[1, 0].set_title(
-        "Test: $R_{m}$ estimated with respect to ground truth $R_{m}$", fontsize="large"
+        f"Test: {target_name} estimated with respect to ground truth {target_name}",
+        fontsize="large",
     )
     ax[1, 0].set_xlabel("Ground truth target values")
     ax[1, 0].set_ylabel("Estimated target values")
     ax[1, 0].text(
         x=max(y_true["test"]),
-        y=min(y_pred["test"]) + 20,
+        y=min(y_pred["test"]) + 30,
         s="R2=" + str(round(metrics["R2_test"], 3)),
         horizontalalignment="right",
         verticalalignment="center",
     )
     ax[1, 0].text(
         x=max(y_true["test"]),
-        y=min(y_pred["test"]) + 10,
+        y=min(y_pred["test"]) + 15,
         s="MSE=" + str(round(metrics["MSE_test"], 3)),
         horizontalalignment="right",
         verticalalignment="center",
@@ -156,7 +160,8 @@ def plot_all_y_pred_y_true(y_true, y_pred, metrics: dict, path_to_save):
     ax[1, 1].plot(y_true["test"], y_pred["test"], "go", label="Test")
 
     ax[1, 1].set_title(
-        "MLP: $R_{m}$ estimated with respect to ground truth $R_{m}$", fontsize="large"
+        f"MLP: {target_name} estimated with respect to ground truth {target_name}",
+        fontsize="large",
     )
     ax[1, 1].set_xlabel("Ground truth target values")
     ax[1, 1].set_ylabel("Estimated target values")
@@ -166,7 +171,9 @@ def plot_all_y_pred_y_true(y_true, y_pred, metrics: dict, path_to_save):
     plt.show()
 
 
-def plot_partial_y_pred_y_true(y_true, y_pred, metrics: dict, path_to_save):
+def plot_partial_y_pred_y_true(
+    y_true, y_pred, metrics: dict, path_to_save, target_name: str = "$R_{m}$"
+):
     """Plot partial y_preds with respect to y_trues
 
     Args:
@@ -187,7 +194,7 @@ def plot_partial_y_pred_y_true(y_true, y_pred, metrics: dict, path_to_save):
     )
 
     ax[0].set_title(
-        "Train: $R_{m}$ estimated with respect to ground truth $R_{m}$",
+        f"Train: {target_name} estimated with respect to ground truth {target_name}",
         fontsize="large",
     )
     ax[0].set_xlabel("Ground truth target values")
@@ -195,14 +202,14 @@ def plot_partial_y_pred_y_true(y_true, y_pred, metrics: dict, path_to_save):
 
     ax[0].text(
         x=max(y_true["train"]),
-        y=min(y_pred["train"]) + 20,
+        y=min(y_pred["train"]) + 40,
         s="R2=" + str(round(metrics["R2_train"], 3)),
         horizontalalignment="right",
         verticalalignment="center",
     )
     ax[0].text(
         x=max(y_true["train"]),
-        y=min(y_pred["train"]) + 10,
+        y=min(y_pred["train"]) + 20,
         s="MSE=" + str(round(metrics["MSE_train"], 3)),
         horizontalalignment="right",
         verticalalignment="center",
@@ -225,7 +232,7 @@ def plot_partial_y_pred_y_true(y_true, y_pred, metrics: dict, path_to_save):
     )
 
     ax[1].set_title(
-        "Valid: $R_{m}$ estimated with respect to ground truth $R_{m}$",
+        f"Valid: {target_name} estimated with respect to ground truth {target_name}",
         fontsize="large",
     )
     ax[1].set_xlabel("Ground truth target values")
@@ -233,14 +240,14 @@ def plot_partial_y_pred_y_true(y_true, y_pred, metrics: dict, path_to_save):
 
     ax[1].text(
         x=max(y_true["valid"]),
-        y=min(y_pred["valid"]) + 20,
+        y=min(y_pred["valid"]) + 40,
         s="R2=" + str(round(metrics["R2_val"], 3)),
         horizontalalignment="right",
         verticalalignment="center",
     )
     ax[1].text(
         x=max(y_true["valid"]),
-        y=min(y_pred["valid"]) + 10,
+        y=min(y_pred["valid"]) + 20,
         s="MSE=" + str(round(metrics["MSE_val"], 3)),
         horizontalalignment="right",
         verticalalignment="center",
