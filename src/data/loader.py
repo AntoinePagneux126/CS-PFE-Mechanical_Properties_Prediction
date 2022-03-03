@@ -70,7 +70,7 @@ def main(cfg):  # pylint: disable=too-many-locals
         dataset=train_dataset,
         batch_size=cfg["DATASET"]["BATCH_SIZE"],
         num_workers=cfg["DATASET"]["NUM_THREADS"],
-        shuffle=True,
+        shuffle=False,
     )
 
     valid_loader = DataLoader(

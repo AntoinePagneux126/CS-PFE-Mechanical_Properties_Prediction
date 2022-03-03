@@ -38,7 +38,7 @@ def inference_ml(
     # Set path
     top_logdir = cfg["TEST"]["SAVE_DIR"]
     save_dir = generate_unique_logpath(top_logdir, "inference")
-    if not os.path.exists(save_dir):
+    if not average and not os.path.exists(save_dir):
         os.mkdir(save_dir)
 
     # Compute predictions
@@ -112,7 +112,7 @@ def inference_nn(
     # Set path
     top_logdir = cfg["TEST"]["SAVE_DIR"]
     save_dir = generate_unique_logpath(top_logdir, "inference")
-    if not os.path.exists(save_dir):
+    if not average and not os.path.exists(save_dir):
         os.mkdir(save_dir)
 
     # Define device for computational efficiency
