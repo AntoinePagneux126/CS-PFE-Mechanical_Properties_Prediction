@@ -17,18 +17,24 @@ from tools.utils import load_model
 from tools.valid import test_one_epoch
 
 
-def inference_ml(cfg):  # pylint: disable=too-many-locals
+def inference_ml(
+    cfg, average=False, model_path=None
+):  # pylint: disable=too-many-locals
     """Run the inference on the test set and writes the output on a csv file
 
     Args:
         cfg (dict): configuration
+        average (bool): Do you call this function to average different models
+        model_path (str): Specify the path too the model you wwant to load.
+                By default it uses the one defined in cfg
     """
 
     # Load data
     preprocessed_data, preprocessed_test_data = loader.main(cfg=cfg)
 
     # Load model
-    model = pickle.load(open(cfg["TEST"]["PATH_TO_MODEL"], "rb"))
+    model_path = cfg["TEST"]["PATH_TO_MODEL"] if model_path is None else model_path
+    model = pickle.load(open(model_path, "rb"))
     # Set path
     top_logdir = cfg["TEST"]["SAVE_DIR"]
     save_dir = generate_unique_logpath(top_logdir, "inference")
@@ -44,6 +50,11 @@ def inference_ml(cfg):  # pylint: disable=too-many-locals
     y_valid_pred = model.predict(preprocessed_data["x_valid"])
     y_test_pred = model.predict(preprocessed_test_data["x_test"])
 
+    y_true = {"train": y_train_true, "valid": y_valid_true, "test": y_test_true}
+    y_pred = {"train": y_train_pred, "valid": y_valid_pred, "test": y_test_pred}
+
+    if average:
+        return y_true, y_pred
     # Compute metrics
     metrics = {}
 
@@ -66,9 +77,6 @@ def inference_ml(cfg):  # pylint: disable=too-many-locals
     print(f"Valid RMSE: {metrics['RMSE_val']} | Valid r2: {metrics['R2_val']}")
     print(f"Test RMSE: {metrics['RMSE_test']} | Valid r2: {metrics['R2_test']}")
 
-    y_true = {"train": y_train_true, "valid": y_valid_true, "test": y_test_true}
-    y_pred = {"train": y_train_pred, "valid": y_valid_pred, "test": y_test_pred}
-
     # Plot and save resuslts
     target_name = "$R_{m}$"
     if cfg["DATASET"]["PREPROCESSING"]["TARGET"] == "re02":
@@ -83,13 +91,19 @@ def inference_ml(cfg):  # pylint: disable=too-many-locals
         path_to_save=save_dir,
         target_name=target_name,
     )
+    return y_true, y_pred, metrics
 
 
-def inference_nn(cfg):  # pylint: disable=too-many-locals
+def inference_nn(
+    cfg, average=False, model_path=None
+):  # pylint: disable=too-many-locals
     """Run the inference on the test set and writes the output on a csv file
 
     Args:
         cfg (dict): configuration
+        average (bool): Do you call this function to average different models
+        model_path (str): Specify the path too the model you wwant to load.
+                By default it uses the one defined in cfg
     """
 
     # Load test data
@@ -113,6 +127,8 @@ def inference_nn(cfg):  # pylint: disable=too-many-locals
     # Define the loss
     f_loss = nn.MSELoss()
 
+    # Load model
+    model_path = cfg["TEST"]["PATH_TO_MODEL"] if model_path is None else model_path
     model = load_model(
         cfg=cfg,
         input_size=input_size,
@@ -120,7 +136,7 @@ def inference_nn(cfg):  # pylint: disable=too-many-locals
     )
     model = model.to(device)
 
-    model.load_state_dict(torch.load(cfg["TEST"]["PATH_TO_MODEL"]))
+    model.load_state_dict(torch.load(model_path))
     model.eval()
 
     # Compute Metrics
@@ -136,6 +152,13 @@ def inference_nn(cfg):  # pylint: disable=too-many-locals
         model, test_loader, f_loss, device, return_predictions=True
     )
 
+    y_true = {"train": y_train_true, "valid": y_valid_true, "test": y_test_true}
+    y_pred = {"train": y_train_pred, "valid": y_valid_pred, "test": y_test_pred}
+
+    if average:
+        return y_true, y_pred
+
+    # Compute metrics
     metrics["MSE_train"] = train_loss
     metrics["RMSE_train"] = np.sqrt(metrics["MSE_train"])
     metrics["R2_train"] = train_r2
@@ -156,9 +179,6 @@ def inference_nn(cfg):  # pylint: disable=too-many-locals
     print(f"Valid RMSE: {metrics['RMSE_val']}   | Valid r2: {val_r2}")
     print(f"Test RMSE: {metrics['RMSE_test']}   | Test r2: {test_r2}")
 
-    y_true = {"train": y_train_true, "valid": y_valid_true, "test": y_test_true}
-    y_pred = {"train": y_train_pred, "valid": y_valid_pred, "test": y_test_pred}
-
     # Plot and save resuslts
     target_name = "$R_{m}$"
     if cfg["DATASET"]["PREPROCESSING"]["TARGET"] == "re02":
@@ -172,6 +192,7 @@ def inference_nn(cfg):  # pylint: disable=too-many-locals
         path_to_save=save_dir,
         target_name=target_name,
     )
+    return y_true, y_pred, metrics
 
 
 if __name__ == "__main__":

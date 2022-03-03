@@ -16,7 +16,7 @@ DATASET:
         Direction: "T"  # ["T", "L"]
         Type: "JI5"  # ["JI5", "I20"]
 
-    TARGET: "A80"  # ["rm", "re02", "A80"]
+    TARGET: "rm"  # ["rm", "re02", "A80"]
   BATCH_SIZE: 32
   TEST_VALID_RATIO: [0.1, 0.2]
   VERBOSITY: True
@@ -70,4 +70,10 @@ TRAIN:
 TEST:
   BATCH_SIZE: 16
   SAVE_DIR: '../res'
-  PATH_TO_MODEL: '../models/linearnet_3_0/best_model.pth'
+  PATH_TO_MODEL: '../models/randomforest_0/model.pck'
+  AVERAGE:
+    ACTIVE: True
+    PATH:
+      - {MODEL: '../models/randomforest_0/model.pck', CONFIG: '../models/randomforest_0/config_file.yaml'}
+      - {MODEL: '../models/randomforest_1/model.pck', CONFIG: '../models/randomforest_1/config_file.yaml'}
+      - {MODEL: '../models/linearnet_3_0/best_model.pth', CONFIG: '../models/linearnet_3_0/config_file.yaml'}

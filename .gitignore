@@ -156,5 +156,8 @@ src/tensorboard/
 # Models
 models/*
 
+# Resutls
+res/*
+
 # Local config file
 src/config_local.yaml
