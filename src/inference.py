@@ -30,7 +30,7 @@ def inference_ml(
     """
 
     # Load data
-    preprocessed_data, preprocessed_test_data = loader.main(cfg=cfg)
+    preprocessed_data, preprocessed_test_data, _ = loader.main(cfg=cfg)
 
     # Load model
     model_path = cfg["TEST"]["PATH_TO_MODEL"] if model_path is None else model_path

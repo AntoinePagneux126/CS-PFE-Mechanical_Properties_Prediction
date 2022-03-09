@@ -4,7 +4,7 @@ DATASET:
   DATA_FORMAT: csv
   PREPROCESSING:
     MERGE_FILES:
-      WHICH: [0]  # Either "all" or list of indexes. ex : [2] or [0, 1, 2] or [2, 0] ...
+      WHICH: "all"  # Either "all" or list of indexes. ex : [2] or [0, 1, 2] or [2, 0] ...
     NORMALIZE:
       TYPE: "StandardScaler"  # ["MinMaxScalar", "StandardScaler"]
     REMOVE_FEATURES:
@@ -26,7 +26,7 @@ MODELS:
   ML:
     ACTIVE: True
     GRID_SEARCH: False
-    TYPE: 'RandomForest'  # ["RandomForest", ExtraTrees, GradientBoosting]
+    TYPE: 'GradientBoosting'  # ["RandomForest", ExtraTrees, GradientBoosting]
     RandomForest:
       rm:
         bootstrap: False
@@ -112,6 +112,6 @@ TEST:
   AVERAGE:
     ACTIVE: True
     PATH:
-      - {MODEL: '../models/randomforest_0/model.pck', CONFIG: '../models/randomforest_0/config_file.yaml'}
-      - {MODEL: '../models/randomforest_1/model.pck', CONFIG: '../models/randomforest_1/config_file.yaml'}
-      - {MODEL: '../models/linearnet_3_0/best_model.pth', CONFIG: '../models/linearnet_3_0/config_file.yaml'}
+      - {MODEL: '../models/randomforest_23/model.pck', CONFIG: '../models/randomforest_23/config_file.yaml'}
+      - {MODEL: '../models/gradientboosting_26/model.pck', CONFIG: '../models/gradientboosting_26/config_file.yaml'}
+      - {MODEL: '../models/extratrees_23/model.pck', CONFIG: '../models/extratrees_23/config_file.yaml'}
