@@ -100,7 +100,7 @@ def main(cfg):  # pylint: disable=too-many-locals
             f" in {len(test_loader)} batches"
         )
 
-    return train_loader, valid_loader, test_loader
+    return train_loader, valid_loader, test_loader, features_names
 
 
 if __name__ == "__main__":

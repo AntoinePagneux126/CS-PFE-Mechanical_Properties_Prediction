@@ -13,7 +13,7 @@ import numpy as np
 import data.loader as loader
 from train import generate_unique_logpath
 import visualization.vis as vis
-from tools.utils import load_model
+from tools.utils import load_model, compute_features_importance
 from tools.valid import test_one_epoch
 
 
@@ -107,7 +107,7 @@ def inference_nn(
     """
 
     # Load test data
-    train_loader, valid_loader, test_loader = loader.main(cfg=cfg)
+    train_loader, valid_loader, test_loader, features_name = loader.main(cfg=cfg)
 
     # Set path
     top_logdir = cfg["TEST"]["SAVE_DIR"]
@@ -192,6 +192,28 @@ def inference_nn(
         path_to_save=save_dir,
         target_name=target_name,
     )
+
+    # Plot feature importance
+    importance, importance_distrib = compute_features_importance(
+        model=model, data=train_loader.dataset.x_data
+    )
+
+    vis.plot_feature_importance(
+        importance=importance,
+        names=features_name,
+        model_type=cfg["TRAIN"]["MODEL"],
+        path_to_save=save_dir,
+        target_name=target_name,
+    )
+
+    vis.plot_feature_distrib(
+        importance=importance_distrib,
+        names=features_name,
+        model_type=cfg["TRAIN"]["MODEL"],
+        path_to_save=save_dir,
+        target_name=target_name,
+    )
+
     return y_true, y_pred, metrics
 
 
