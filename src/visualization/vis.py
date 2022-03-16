@@ -310,3 +310,36 @@ def plot_feature_importance(
 
     plt.savefig(path_to_save + "/feature_importance_" + model_type + ".png")
     plt.close(fig)
+
+
+def plot_feature_distrib(
+    importance, names, model_type, path_to_save: str, target_name: str = "$R_{m}$"
+):
+    """Plot feature importance distribution based on NN model used
+
+    Args:
+        importance (list): feature importance values
+        names (list): feature names
+        model_type (string): Model used
+        path_to_save (str): Path to file
+        target_name (str) : Name of the target, formated in TeX
+    """
+
+    fig = plt.figure(figsize=(14, 14))
+    j = 0
+    for i, name in enumerate(names):
+        plt.subplot(5, 4, j + 1)
+        j += 1
+        sns.histplot(importance[:, i], label=name, kde=True, linewidth=0)
+        plt.legend(loc="best")
+
+    fig.tight_layout()
+    fig.subplots_adjust(top=0.95)
+
+    # Add chart labels
+    plt.suptitle(
+        f"{model_type} - Features Importance distribution for {target_name} prediction"
+    )
+
+    plt.savefig(path_to_save + "/feature_importance_distrib_" + model_type + ".png")
+    plt.close(fig)

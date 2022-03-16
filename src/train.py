@@ -14,7 +14,12 @@ import torch.nn as nn
 from torch.utils.tensorboard import SummaryWriter
 
 from tools.trainer import train_one_epoch
-from tools.utils import load_model, choose_scheduler, launch_grid_search
+from tools.utils import (
+    load_model,
+    choose_scheduler,
+    launch_grid_search,
+    compute_features_importance,
+)
 from tools.valid import test_one_epoch, ModelCheckpoint
 import data.loader as loader
 import visualization.vis as vis
@@ -144,7 +149,7 @@ def main_nn(
     """
 
     # Load data
-    train_loader, valid_loader, test_loader = loader.main(cfg=cfg)
+    train_loader, valid_loader, test_loader, features_name = loader.main(cfg=cfg)
 
     # Define device
     if torch.cuda.is_available():
@@ -266,10 +271,32 @@ def main_nn(
         target_name = "$R_{e02}$"
     elif cfg["DATASET"]["PREPROCESSING"]["TARGET"] == "A80":
         target_name = "$A_{80}$"
+
     vis.plot_all_y_pred_y_true(
         y_true=y_true,
         y_pred=y_pred,
         metrics=metrics,
+        path_to_save=save_dir,
+        target_name=target_name,
+    )
+
+    # Plot feature importance
+    importance, importance_distrib = compute_features_importance(
+        model=model, data=train_loader.dataset.x_data
+    )
+
+    vis.plot_feature_importance(
+        importance=importance,
+        names=features_name,
+        model_type=cfg["TRAIN"]["MODEL"],
+        path_to_save=save_dir,
+        target_name=target_name,
+    )
+
+    vis.plot_feature_distrib(
+        importance=importance_distrib,
+        names=features_name,
+        model_type=cfg["TRAIN"]["MODEL"],
         path_to_save=save_dir,
         target_name=target_name,
     )

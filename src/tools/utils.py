@@ -1,6 +1,7 @@
 """This module aims to define utils function for the project."""
 import numpy as np
 
+from captum.attr import IntegratedGradients
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import GridSearchCV
 
@@ -121,3 +122,20 @@ def launch_grid_search(cfg, preprocessed_data):  # pylint: disable=too-many-loca
             "n_jobs": 1,
         }
         return model, params
+
+
+def compute_features_importance(model, data):
+    """ Primary attribution can be regarded as global feature explanations
+    because it evaluates feature contributions to the output of the model
+
+    Args:
+        model (torch.nn): NN model
+        data (torch.Tensor): Input data to compute features importance
+
+    Returns:
+        torch.Tensor: features attribution
+    """
+    importance = np.array(IntegratedGradients(model).attribute(data))
+    tot = np.sum(abs(np.array(importance)), axis=1).reshape(-1, 1)
+
+    return np.mean(abs(importance) / tot, axis=0), importance

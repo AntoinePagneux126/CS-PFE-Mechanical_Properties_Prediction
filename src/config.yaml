@@ -16,13 +16,13 @@ DATASET:
         #Direction: "T"  # ["T", "L"]
         Type: "JI5"  # ["JI5", "I20"]
 
-    TARGET: "A80"  # ["rm", "re02", "A80"]
+    TARGET: "rm"  # ["rm", "re02", "A80"]
   BATCH_SIZE: 32
   TEST_VALID_RATIO: [0.1, 0.2]
   VERBOSITY: True
   NUM_THREADS: 4
 MODELS:
-  NN: False
+  NN: True
   ML:
     ACTIVE: True
     GRID_SEARCH: False
@@ -88,19 +88,19 @@ MODELS:
         min_samples_split: 6
         n_estimators: 70
 TRAIN:
-  EPOCH: 2
+  EPOCH: 100
   CHECKPOINT_STEP: 500
   MODEL: LinearNet_3
   NUM_HIDDEN_NEURON: 64
   LOG_DIR: 'tensorboard/metrics'
   SAVE_DIR: '../models'
   LR:
-    LR_INITIAL : 0.001
-    TYPE: "CyclicLR"  # [ReduceLROnPlateau, CyclicLR]
+    LR_INITIAL : 0.01
+    TYPE: "ReduceLROnPlateau"  # [ReduceLROnPlateau, CyclicLR]
     ReduceLROnPlateau:
-      LR_DECAY: 0.01
-      LR_PATIENCE : 3
-      LR_THRESHOLD : 0.02
+      LR_DECAY: 0.2
+      LR_PATIENCE : 10
+      LR_THRESHOLD : 1
     CyclicLR:
       BASE_LR: 0.00001
       MAX_LR: 0.001
@@ -108,7 +108,7 @@ TRAIN:
 TEST:
   BATCH_SIZE: 16
   SAVE_DIR: '../res'
-  PATH_TO_MODEL: '../models/randomforest_0/model.pck'
+  PATH_TO_MODEL: '../models/linearnet_3_0/best_model.pth'
   AVERAGE:
     ACTIVE: True
     PATH:
