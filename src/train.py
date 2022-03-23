@@ -52,7 +52,7 @@ def main_ml(cfg, path_to_config):  # pylint: disable=too-many-locals
         path_to_config(string): path to the config file
     """
     # Load data
-    preprocessed_data, _, features_name = loader.main(cfg=cfg)
+    preprocessed_data, preprocessed_test_data, features_name = loader.main(cfg=cfg)
 
     # Init directory to save model saving best models
     top_logdir = cfg["TRAIN"]["SAVE_DIR"]
@@ -85,6 +85,8 @@ def main_ml(cfg, path_to_config):  # pylint: disable=too-many-locals
     y_train_true = preprocessed_data["y_train"]
     y_valid_true = preprocessed_data["y_valid"]
     y_train_pred = model.predict(preprocessed_data["x_train"])
+    y_test_true = preprocessed_test_data["y_test"]
+    y_test_pred = model.predict(preprocessed_test_data["x_test"])
 
     # Compute metrics
     metrics = {}
@@ -95,6 +97,9 @@ def main_ml(cfg, path_to_config):  # pylint: disable=too-many-locals
     metrics["MSE_val"] = mean_squared_error(y_valid_true, y_pred)
     metrics["RMSE_val"] = np.sqrt(metrics["MSE_val"])
     metrics["R2_val"] = r2_score(y_valid_true, y_pred)
+    metrics["MSE_test"] = mean_squared_error(y_test_true, y_test_pred)
+    metrics["RMSE_test"] = np.sqrt(metrics["MSE_test"])
+    metrics["R2_test"] = r2_score(y_test_true, y_test_pred)
 
     # Print results
     print("\n###########")
@@ -103,9 +108,10 @@ def main_ml(cfg, path_to_config):  # pylint: disable=too-many-locals
 
     print(f"Train RMSE: {metrics['RMSE_train']} | Train r2: {metrics['R2_train']}")
     print(f"Valid RMSE: {metrics['RMSE_val']} | Valid r2: {metrics['R2_val']}")
+    print(f"Test RMSE: {metrics['RMSE_test']}   | Test r2: {metrics['R2_test']}")
 
-    y_true = {"train": y_train_true, "valid": y_valid_true}
-    y_pred = {"train": y_train_pred, "valid": y_pred}
+    y_true = {"train": y_train_true, "valid": y_valid_true, "test": y_test_true}
+    y_pred = {"train": y_train_pred, "valid": y_pred, "test": y_test_pred}
 
     # Plot and save resuslts
     target_name = "$R_{m}$"
@@ -114,7 +120,7 @@ def main_ml(cfg, path_to_config):  # pylint: disable=too-many-locals
     elif cfg["DATASET"]["PREPROCESSING"]["TARGET"] == "A80":
         target_name = "$A_{80}$"
 
-    vis.plot_partial_y_pred_y_true(
+    vis.plot_all_y_pred_y_true(
         y_true=y_true,
         y_pred=y_pred,
         metrics=metrics,
