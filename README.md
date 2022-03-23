@@ -27,6 +27,7 @@
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
+        <li><a href="#navigate-into-the-project">Navigate into the project</a></li>
         <li><a href="#prerequisites">Prerequisites</a></li>
         <li><a href="#installation">Installation</a></li>
       </ul>
@@ -62,6 +63,55 @@ For more details on the modules and libraries used, please refer to the [require
 <!-- GETTING STARTED -->
 ## Getting Started
 
+### Navigate into the project
+
+```bash
+.
+├── README.md
+├── requirement.txt
+├── data
+│   ├── DP980_Sagunto_2021_upgrade.csv
+│   ├── DP980GA_Galma1_upgrade.csv
+│   ├── DP980GI_SDG3-v2_20220208_upgrade.csv
+│   ├── dDP980GI_SDG3.5_20220208_upgrade.csv
+│   ├── DP980Y700_EKO1_upgrade.csv
+│   └── DP980Y700_SDG3_2021_upgrade.csv
+├── docs
+├── images
+├── models
+├── notebooks
+├── res
+└── src
+    ├── README.MD
+    ├── average_inference.py
+    ├── config.yaml
+    ├── inference.py
+    ├── train.py
+    ├── data
+    │   ├── loader.py
+    │   └── dataset_utils.py
+    ├── models
+    │   ├── LinearNet_1.py
+    │   ├── LinearNet_2.py
+    │   ├── LinearNet_3.py
+    │   └── MachineLearningModels.py
+    ├── tensorboard
+    ├── tools
+    │   ├── trainer.py
+    │   ├── utils.py
+    │   └── valid.py
+    └── visualization
+        └── vis.py
+```
+
+* `./data`: Contains all data files
+* `./docs`: Contains all the files concerning the documentation of the code
+* `./models`: Contains all trained models. This is the output directory
+* `./notebooks`: Contains all the notebooks to speed up development and test new things
+* `./src`: Contains all the scripts of the project
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
 ### Prerequisites
 
 You will need Python on your computer and pip (the package installer for Python).
@@ -89,7 +139,7 @@ You will need Python on your computer and pip (the package installer for Python)
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-All our project is configurable using the configuration file in the `src` folder. For more details about this configuration file, please refer to our specific documentation [here](https://gitlab-student.centralesupelec.fr/2018barreeg/pfe-arcelor2/-/blob/master/src/README.md)
+**All our project is configurable using the configuration file in the `src` folder. For more details about this configuration file, please refer to our specific documentation [[here]](https://gitlab-student.centralesupelec.fr/2018barreeg/pfe-arcelor2/-/blob/master/src/README.md)**
 
 ### Launch the training
 

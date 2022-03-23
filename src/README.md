@@ -241,7 +241,7 @@ In this section, you can specify all the parameters for your NN.
 * If you want to create a new NN model, see [here](https://gitlab-student.centralesupelec.fr/2018barreeg/pfe-arcelor2/-/blob/master/src/models/);
 * `NUM_HIDDEN_NEURON` is very important for `LinearNet_1` and `LinearNet_3`. It represent the number of neurones of your first hidden layer;
 * All the results of your models will be save in `SAVE_DIR`. You don't need to change this value.
-* Then you can choose between two learning scheduler, [ReduceOnPlateau](https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ReduceLROnPlateau.html#:~:text=Reduce%20learning%20rate%20when%20a,the%20learning%20rate%20is%20reduced.) and [CyclicLR](https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.CyclicLR.html);
+* Then you can choose between two learning schedulers, [ReduceOnPlateau](https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.ReduceLROnPlateau.html#:~:text=Reduce%20learning%20rate%20when%20a,the%20learning%20rate%20is%20reduced.) and [CyclicLR](https://pytorch.org/docs/stable/generated/torch.optim.lr_scheduler.CyclicLR.html);
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
