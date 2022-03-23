@@ -82,7 +82,7 @@ Here is the basic code to create a NN
 * You just have to add an `elif` statement in the models function of the `MachineLearningModels` module;
 * Do not forget to add your model in the configuration file. See [[here]](https://gitlab-student.centralesupelec.fr/2018barreeg/pfe-arcelor2/-/blob/master/src/README.m#L116/).
 
-**Go to the last section to add your module to the pipeline**
+**Go to the last section to add your module to the pipeline** <a href="#add-your-model-to-the-pipeline">[to section]</a>
 
 ## Add your model to the pipeline
 
