@@ -8,6 +8,7 @@ import torch.nn as nn
 import yaml
 
 from sklearn.metrics import mean_squared_error, r2_score
+from torch.utils.data import ConcatDataset, DataLoader
 import numpy as np
 
 import data.loader as loader
@@ -32,6 +33,14 @@ def inference_ml(
     # Load data
     preprocessed_data, preprocessed_test_data, _ = loader.main(cfg=cfg)
 
+    x_test = np.concatenate(
+        (
+            preprocessed_data["x_train"],
+            preprocessed_data["x_valid"],
+            preprocessed_test_data["x_test"],
+        )
+    )
+
     # Load model
     model_path = cfg["TEST"]["PATH_TO_MODEL"] if model_path is None else model_path
     model = pickle.load(open(model_path, "rb"))
@@ -42,28 +51,24 @@ def inference_ml(
         os.mkdir(save_dir)
 
     # Compute predictions
-    y_train_true = preprocessed_data["y_train"]
-    y_valid_true = preprocessed_data["y_valid"]
-    y_test_true = preprocessed_test_data["y_test"]
+    y_test_true = np.concatenate(
+        (
+            preprocessed_data["y_train"],
+            preprocessed_data["y_valid"],
+            preprocessed_test_data["y_test"],
+        )
+    )
 
-    y_train_pred = model.predict(preprocessed_data["x_train"])
-    y_valid_pred = model.predict(preprocessed_data["x_valid"])
-    y_test_pred = model.predict(preprocessed_test_data["x_test"])
+    y_test_pred = model.predict(x_test)
 
-    y_true = {"train": y_train_true, "valid": y_valid_true, "test": y_test_true}
-    y_pred = {"train": y_train_pred, "valid": y_valid_pred, "test": y_test_pred}
+    y_true = {"test": y_test_true}
+    y_pred = {"test": y_test_pred}
 
     if average:
         return y_true, y_pred
     # Compute metrics
     metrics = {}
 
-    metrics["MSE_train"] = mean_squared_error(y_train_true, y_train_pred)
-    metrics["RMSE_train"] = np.sqrt(metrics["MSE_train"])
-    metrics["R2_train"] = r2_score(y_train_true, y_train_pred)
-    metrics["MSE_val"] = mean_squared_error(y_valid_true, y_valid_pred)
-    metrics["RMSE_val"] = np.sqrt(metrics["MSE_val"])
-    metrics["R2_val"] = r2_score(y_valid_true, y_valid_pred)
     metrics["MSE_test"] = mean_squared_error(y_test_true, y_test_pred)
     metrics["RMSE_test"] = np.sqrt(metrics["MSE_test"])
     metrics["R2_test"] = r2_score(y_test_true, y_test_pred)
@@ -73,8 +78,6 @@ def inference_ml(
     print("# Results #")
     print("###########\n")
 
-    print(f"Train RMSE: {metrics['RMSE_train']} | Train r2: {metrics['R2_train']}")
-    print(f"Valid RMSE: {metrics['RMSE_val']} | Valid r2: {metrics['R2_val']}")
     print(f"Test RMSE: {metrics['RMSE_test']} | Valid r2: {metrics['R2_test']}")
 
     # Plot and save resuslts
@@ -84,9 +87,9 @@ def inference_ml(
     elif cfg["DATASET"]["PREPROCESSING"]["TARGET"] == "A80":
         target_name = "$A_{80}$"
 
-    vis.plot_all_y_pred_y_true(
-        y_true=y_true,
-        y_pred=y_pred,
+    vis.plot_y_pred_y_true(
+        y_true=y_true["test"],
+        y_pred=y_pred["test"],
         metrics=metrics,
         path_to_save=save_dir,
         target_name=target_name,
@@ -109,6 +112,16 @@ def inference_nn(
     # Load test data
     train_loader, valid_loader, test_loader, features_name = loader.main(cfg=cfg)
 
+    # Create on DataLoader
+    dataset = ConcatDataset(
+        [train_loader.dataset, valid_loader.dataset, test_loader.dataset]
+    )
+    test_loader = DataLoader(
+        dataset=dataset,
+        batch_size=cfg["DATASET"]["BATCH_SIZE"],
+        shuffle=False,
+        num_workers=cfg["DATASET"]["NUM_THREADS"],
+    )
     # Set path
     top_logdir = cfg["TEST"]["SAVE_DIR"]
     save_dir = generate_unique_logpath(top_logdir, "inference")
@@ -122,7 +135,7 @@ def inference_nn(
         device = torch.device("cuda")
 
     # Load model for inference
-    input_size = train_loader.dataset[0][0].shape[0]
+    input_size = test_loader.dataset[0][0].shape[0]
 
     # Define the loss
     f_loss = nn.MSELoss()
@@ -142,31 +155,17 @@ def inference_nn(
     # Compute Metrics
     metrics = {}
 
-    train_loss, train_r2, y_train_true, y_train_pred = test_one_epoch(
-        model, train_loader, f_loss, device, return_predictions=True
-    )
-    val_loss, val_r2, y_valid_true, y_valid_pred = test_one_epoch(
-        model, valid_loader, f_loss, device, return_predictions=True
-    )
     test_loss, test_r2, y_test_true, y_test_pred = test_one_epoch(
         model, test_loader, f_loss, device, return_predictions=True
     )
 
-    y_true = {"train": y_train_true, "valid": y_valid_true, "test": y_test_true}
-    y_pred = {"train": y_train_pred, "valid": y_valid_pred, "test": y_test_pred}
+    y_true = {"test": y_test_true}
+    y_pred = {"test": y_test_pred}
 
     if average:
         return y_true, y_pred
 
     # Compute metrics
-    metrics["MSE_train"] = train_loss
-    metrics["RMSE_train"] = np.sqrt(metrics["MSE_train"])
-    metrics["R2_train"] = train_r2
-
-    metrics["MSE_val"] = val_loss
-    metrics["RMSE_val"] = np.sqrt(metrics["MSE_val"])
-    metrics["R2_val"] = val_r2
-
     metrics["MSE_test"] = test_loss
     metrics["RMSE_test"] = np.sqrt(metrics["MSE_test"])
     metrics["R2_test"] = test_r2
@@ -175,8 +174,6 @@ def inference_nn(
     print("# Results #")
     print("###########\n")
 
-    print(f"Train RMSE: {metrics['RMSE_train']} | Train r2: {train_r2}")
-    print(f"Valid RMSE: {metrics['RMSE_val']}   | Valid r2: {val_r2}")
     print(f"Test RMSE: {metrics['RMSE_test']}   | Test r2: {test_r2}")
 
     # Plot and save resuslts
@@ -185,9 +182,9 @@ def inference_nn(
         target_name = "$R_{e02}$"
     elif cfg["DATASET"]["PREPROCESSING"]["TARGET"] == "A80":
         target_name = "$A_{80}$"
-    vis.plot_all_y_pred_y_true(
-        y_true=y_true,
-        y_pred=y_pred,
+    vis.plot_y_pred_y_true(
+        y_true=y_true["test"],
+        y_pred=y_pred["test"],
         metrics=metrics,
         path_to_save=save_dir,
         target_name=target_name,
