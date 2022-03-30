@@ -7,16 +7,19 @@ import pandas as pd
 import seaborn as sns
 
 
-def plot_y_pred_y_true(y_true, y_pred, path_to_save, target_name: str = "$R_{m}$"):
+def plot_y_pred_y_true(
+    y_true, y_pred, metrics, path_to_save, target_name: str = "$R_{m}$"
+):
     """Plot y_pred with respect to y_true
 
     Args:
         y_true (array): Ground truth target values
         y_pred (array): Estimated target values
+        metrics (dict): Metrics (RMSE, R2)
         path_to_save (str): Path to file
         target_name (str) : Name of the target, formated in TeX
     """
-    fig = plt.figure(figsize=(8, 15))
+    fig = plt.figure(figsize=(15, 8))
     ax = fig.add_subplot(1, 1, 1)
 
     ax.plot(y_true, y_pred, "bo", label="Estimated target")
@@ -28,6 +31,29 @@ def plot_y_pred_y_true(y_true, y_pred, path_to_save, target_name: str = "$R_{m}$
     )
     ax.set_xlabel("Ground truth target values")
     ax.set_ylabel("Estimated target values")
+
+    ax.text(
+        x=max(y_true),
+        y=min(y_pred) + 30,
+        s="R2=" + str(round(metrics["R2_test"], 3)),
+        horizontalalignment="right",
+        verticalalignment="center",
+    )
+    ax.text(
+        x=max(y_true),
+        y=min(y_pred) + 15,
+        s="MSE=" + str(round(metrics["MSE_test"], 3)),
+        horizontalalignment="right",
+        verticalalignment="center",
+    )
+    ax.text(
+        x=max(y_true),
+        y=min(y_pred),
+        s="RMSE=" + str(round(metrics["RMSE_test"], 3)),
+        horizontalalignment="right",
+        verticalalignment="center",
+    )
+
     ax.legend(loc="best")
 
     plt.savefig(os.path.join(path_to_save, "y_pred_y_true.png"))
